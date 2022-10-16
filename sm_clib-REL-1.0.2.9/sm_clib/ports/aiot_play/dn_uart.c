@@ -10,6 +10,8 @@ typedef struct {
 dn_uart_vars_t dn_uart_vars;
 
 typedef struct {
+    uint8_t             rx_history_idx;
+    uint8_t             rx_history[256];
     uint32_t            num_UART_TXed_bytes;
     uint32_t            num_ISR_UARTE0_UART0_IRQHandler;
     uint32_t            num_ISR_UARTE0_UART0_IRQHandler_RXDRDY;
@@ -31,13 +33,13 @@ void dn_uart_init(dn_uart_rxByte_cbt rxByte_cb){
 
     //=== UART0 to mote
     
-    // <==  TX: P0.26
-    //  ==> RX: P0.02
+    // <==  TX: P0.09
+    //  ==> RX: P0.10
     
     // configure
     NRF_UART0->ENABLE                  = 0x00000004; // 0x00000004==enable
-    NRF_UART0->PSEL.TXD                = 0x0000001a; // 0x0000001a==P0.26
-    NRF_UART0->PSEL.RXD                = 0x00000002; // 0x00000002==P0.02
+    NRF_UART0->PSEL.TXD                = 0x00000009; // 0x00000009==P0.09
+    NRF_UART0->PSEL.RXD                = 0x0000000a; // 0x0000000a==P0.02
     NRF_UART0->CONFIG                  = 0x00000000; // 0x00000000==no flow control, no parity bits, 1 stop bit
     NRF_UART0->BAUDRATE                = 0x01D7E000; // 0x01D7E000==115200 baud (actual rate: 115942)
     NRF_UART0->TASKS_STARTTX           = 0x00000001; // 0x00000001==start TX state machine; write to TXD to send
@@ -91,6 +93,9 @@ void UARTE0_UART0_IRQHandler(void) {
 
         // clear
         NRF_UART0->EVENTS_RXDRDY = 0x00000000;
+
+        // debug
+        dn_uart_dbg.rx_history[dn_uart_dbg.rx_history_idx++] = NRF_UART0->RXD;
 
         // read
         dn_uart_vars.ipmt_uart_rxByte_cb(NRF_UART0->RXD);
