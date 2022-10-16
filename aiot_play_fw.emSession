@@ -12,6 +12,7 @@
  <Memory4/>
  <Project>
   <ProjectSessionItem path="aiot_play_fw"/>
+  <ProjectSessionItem path="aiot_play_fw;aiot_play_fw"/>
  </Project>
  <Register1/>
  <Register2/>
