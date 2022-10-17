@@ -84,6 +84,7 @@ void dn_uart_txFlush(){
 //=========================== interrupt handlers ==============================
 
 void UARTE0_UART0_IRQHandler(void) {
+    uint8_t rxByte;
 
     // debug
     dn_uart_dbg.num_ISR_UARTE0_UART0_IRQHandler++;
@@ -94,11 +95,14 @@ void UARTE0_UART0_IRQHandler(void) {
         // clear
         NRF_UART0->EVENTS_RXDRDY = 0x00000000;
 
+        // read
+        rxByte = NRF_UART0->RXD;
+
         // debug
-        dn_uart_dbg.rx_history[dn_uart_dbg.rx_history_idx++] = NRF_UART0->RXD;
+        dn_uart_dbg.rx_history[dn_uart_dbg.rx_history_idx++] = rxByte;
 
         // read
-        dn_uart_vars.ipmt_uart_rxByte_cb(NRF_UART0->RXD);
+        dn_uart_vars.ipmt_uart_rxByte_cb(rxByte);
 
         // debug
         dn_uart_dbg.num_ISR_UARTE0_UART0_IRQHandler_RXDRDY++;
