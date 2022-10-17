@@ -50,7 +50,7 @@
     </folder>
     <folder Name="Source Files">
       <configuration Name="Common" filter="c;cpp;cxx;cc;h;s;asm;inc" />
-      <file file_name="02drv_triangle.c" />
+      <file file_name="02drv_triangle/02drv_triangle.c" />
       <folder Name="sm_clib">
         <file file_name="common/sm_clib-REL-1.0.2.9/sm_clib/dn_clib_build.h" />
         <file file_name="common/sm_clib-REL-1.0.2.9/sm_clib/dn_clib_version.h" />
