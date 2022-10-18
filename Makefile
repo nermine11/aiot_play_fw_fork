@@ -4,8 +4,7 @@ SEGGER_DIR ?= /opt/segger
 BUILD_CONFIG ?= Debug
 SEGGER_PROJECT ?= aiot_play_fw.emProject
 
-PROJECTS ?= $(shell git grep -h "project Name" $(SEGGER_PEOJECT) | sed -e s/"<project Name=\"/"/ | sed -e s/\"\>// | sed -e s/^[[:space:]]*// | sort)
-SRCS ?= $(shell find bsp/ -name "*.[c|h]") $(shell find drv/ -name "*.[c|h]") $(shell find projects/ -name "*.[c|h]")
+PROJECTS ?= 02drv_triangle
 
 .PHONY: $(PROJECTS)
 
