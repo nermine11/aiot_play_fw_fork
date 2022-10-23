@@ -84,15 +84,15 @@ void gpio_P030_input_init(void)  { _gpio_input_init(30);  }
 //=========================== private =========================================
 
 void _gpio_output_init(uint8_t pin) {
-    // TODO
+    NRF_P0->PIN_CNF[pin]          = 0x00000003;
 }
 
 void _gpio_output_high(uint8_t pin) {
-    // TODO
+    NRF_P0->OUTSET                = (0x00000001 << pin);
 }
 
 void _gpio_output_low(uint8_t pin) {
-    // TODO
+    NRF_P0->OUTCLR                = (0x00000001 << pin);
 }
 
 void _gpio_input_init(uint8_t pin) {
