@@ -56,6 +56,8 @@
         <file file_name="../common/bsp/board.h" />
         <file file_name="../common/bsp/gpio.c" />
         <file file_name="../common/bsp/gpio.h" />
+        <file file_name="../common/bsp/busywait.c" />
+        <file file_name="../common/bsp/busywait.h" />
       </folder>
     </folder>
     <folder Name="System Files">

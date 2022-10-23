@@ -1,5 +1,6 @@
 #include "board.h"
 #include "gpio.h"
+#include "busywait.h"
 
 //=========================== defines =========================================
 
@@ -8,8 +9,6 @@
 //=========================== variables ========================&===============
 
 //=========================== prototypes ======================================
-
-static void _wait_approx_250ms(void);
 
 //=========================== main ============================================
 
@@ -52,7 +51,7 @@ int main(void) {
         gpio_P030_output_high();
 
         // busy wait
-        _wait_approx_250ms();
+        busywait_approx_250ms();
 
         // all GPIOs low
         gpio_P002_output_low();
@@ -70,16 +69,8 @@ int main(void) {
         gpio_P030_output_low();
 
         // busy wait
-        _wait_approx_250ms();
+        busywait_approx_250ms();
     }
 }
 
 //=========================== private =========================================
-
-static void _wait_approx_250ms(void) {
-   volatile uint32_t delay;
-
-   for (delay=0; delay<0x000fffff; delay++) {
-       __NOP();
-   }
-}
