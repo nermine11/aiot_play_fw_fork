@@ -44,7 +44,7 @@
       </file>
     </folder>
     <folder Name="Script Files">
-      <file file_name="nRF/Scripts/nRF_Target.js">
+      <file file_name="../common/nRF/Scripts/nRF_Target.js">
         <configuration Name="Common" file_type="Reset Script" />
       </file>
     </folder>
@@ -110,7 +110,7 @@
       </file>
     </folder>
     <folder Name="Script Files">
-      <file file_name="nRF/Scripts/nRF_Target.js">
+      <file file_name="../common/nRF/Scripts/nRF_Target.js">
         <configuration Name="Common" file_type="Reset Script" />
       </file>
     </folder>

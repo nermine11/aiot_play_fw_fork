@@ -9,6 +9,8 @@
 
 //=========================== prototypes ======================================
 
+static void _wait_approx_250ms(void);
+
 //=========================== main ============================================
 
 int main(void) {
@@ -49,6 +51,9 @@ int main(void) {
         gpio_P029_output_high();
         gpio_P030_output_high();
 
+        // busy wait
+        _wait_approx_250ms();
+
         // all GPIOs low
         gpio_P002_output_low();
         gpio_P003_output_low();
@@ -63,7 +68,18 @@ int main(void) {
         gpio_P028_output_low();
         gpio_P029_output_low();
         gpio_P030_output_low();
+
+        // busy wait
+        _wait_approx_250ms();
     }
 }
 
 //=========================== private =========================================
+
+static void _wait_approx_250ms(void) {
+   volatile uint32_t delay;
+
+   for (delay=0; delay<0x000fffff; delay++) {
+       __NOP();
+   }
+}
