@@ -78,9 +78,4 @@ void gpio_P030_output_high(void);
 void gpio_P030_output_low(void);
 void gpio_P030_input(void);
 
-/**
-\}
-\}
-*/
-
 #endif
