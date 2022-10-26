@@ -1,6 +1,6 @@
 <!DOCTYPE CrossStudio_Project_File>
 <solution Name="aiot_play_fw" target="8" version="2">
-  <project Name="01bsp_gpio">
+  <project Name="01bsp_gpio_wave">
     <configuration
       LIBRARY_IO_TYPE="RTT"
       Name="Common"
@@ -30,7 +30,7 @@
       link_linker_script_file="$(ProjectDir)/../common/nRF_Flash_Variant1.icf"
       linker_memory_map_file="$(ProjectDir)/../common/nRF52833_xxAA_MemoryMap.xml"
       macros="DeviceHeaderFile=$(PackagesDir)/../common/nRF/Device/Include/nrf.h;DeviceSystemFile=$(PackagesDir)/../common/nRF/Device/Source/system_nrf52.c;DeviceVectorsFile=$(PackagesDir)/../common/nRF/Source/nrf52833_Vectors.s;DeviceFamily=nRF;Target=nRF52833_xxAA"
-      project_directory="01bsp_gpio"
+      project_directory="01bsp_gpio_wave"
       project_type="Executable"
       target_reset_script="Reset();"
       target_trace_initialize_script="EnableTrace(&quot;$(TraceInterfaceType)&quot;)" />
@@ -50,7 +50,7 @@
     </folder>
     <folder Name="Source Files">
       <configuration Name="Common" filter="c;cpp;cxx;cc;h;s;asm;inc" />
-      <file file_name="01bsp_gpio.c" />
+      <file file_name="01bsp_gpio_wave.c" />
       <folder Name="bsp">
         <file file_name="../common/bsp/board.c" />
         <file file_name="../common/bsp/board.h" />
