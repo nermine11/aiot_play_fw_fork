@@ -1,4 +1,4 @@
-#include "nrf52833.h"
+#include "board.h"
 #include "dn_ipmt.h"
 
 //=========================== defines =========================================
@@ -111,8 +111,7 @@ int main(void) {
     memset(&app_dbg, 0x00,sizeof(app_dbg));
     
     // bsp
-    lfxtal_start();
-    hfclock_start();
+    board_init();
 
     // initialize the ipmt module
     dn_ipmt_init(
@@ -471,28 +470,6 @@ void api_sendTo_reply(void) {
    
    // choose next step
    fsm_scheduleEvent(ONE_SEC, api_sendTo);
-}
-
-//=========================== bsp =============================================
-
-//=== lfxtal
-
-void lfxtal_start(void) {
-    
-    // start 32kHz XTAL
-    NRF_CLOCK->LFCLKSRC                = 0x00000001; // 1==XTAL
-    NRF_CLOCK->EVENTS_LFCLKSTARTED     = 0;
-    NRF_CLOCK->TASKS_LFCLKSTART        = 0x00000001;
-    while (NRF_CLOCK->EVENTS_LFCLKSTARTED == 0);
-}
-
-//=== hfclock
-
-void hfclock_start(void) {
-    
-    NRF_CLOCK->EVENTS_HFCLKSTARTED     = 0;
-    NRF_CLOCK->TASKS_HFCLKSTART        = 0x00000001;
-    while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0);
 }
 
 //=========================== interrupt handlers ==============================
