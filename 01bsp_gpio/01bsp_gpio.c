@@ -36,40 +36,34 @@ int main(void) {
     while(1) {
         
         // all GPIOs high
-        gpio_P002_output_high();
-        gpio_P003_output_high();
-        gpio_P004_output_high();
-        gpio_P005_output_high();
-        gpio_P011_output_high();
-        gpio_P015_output_high();
-        gpio_P017_output_high();
-        gpio_P018_output_high();
-        gpio_P019_output_high();
-        gpio_P020_output_high();
-        gpio_P028_output_high();
-        gpio_P029_output_high();
-        gpio_P030_output_high();
-
-        // busy wait
-        busywait_approx_250ms();
-
+        gpio_P002_output_high(); busywait_approx_125ms();
+        gpio_P003_output_high(); busywait_approx_125ms();
+        gpio_P004_output_high(); busywait_approx_125ms();
+        gpio_P005_output_high(); busywait_approx_125ms();
+        gpio_P011_output_high(); busywait_approx_125ms();
+        gpio_P015_output_high(); busywait_approx_125ms();
+        gpio_P017_output_high(); busywait_approx_125ms();
+        gpio_P018_output_high(); busywait_approx_125ms();
+        gpio_P019_output_high(); busywait_approx_125ms();
+        gpio_P020_output_high(); busywait_approx_125ms();
+        gpio_P028_output_high(); busywait_approx_125ms();
+        gpio_P029_output_high(); busywait_approx_125ms();
+        gpio_P030_output_high(); busywait_approx_125ms();
+        
         // all GPIOs low
-        gpio_P002_output_low();
-        gpio_P003_output_low();
-        gpio_P004_output_low();
-        gpio_P005_output_low();
-        gpio_P011_output_low();
-        gpio_P015_output_low();
-        gpio_P017_output_low();
-        gpio_P018_output_low();
-        gpio_P019_output_low();
-        gpio_P020_output_low();
-        gpio_P028_output_low();
-        gpio_P029_output_low();
-        gpio_P030_output_low();
-
-        // busy wait
-        busywait_approx_250ms();
+        gpio_P002_output_low();  busywait_approx_125ms();
+        gpio_P003_output_low();  busywait_approx_125ms();
+        gpio_P004_output_low();  busywait_approx_125ms();
+        gpio_P005_output_low();  busywait_approx_125ms();
+        gpio_P011_output_low();  busywait_approx_125ms();
+        gpio_P015_output_low();  busywait_approx_125ms();
+        gpio_P017_output_low();  busywait_approx_125ms();
+        gpio_P018_output_low();  busywait_approx_125ms();
+        gpio_P019_output_low();  busywait_approx_125ms();
+        gpio_P020_output_low();  busywait_approx_125ms();
+        gpio_P028_output_low();  busywait_approx_125ms();
+        gpio_P029_output_low();  busywait_approx_125ms();
+        gpio_P030_output_low();  busywait_approx_125ms();
     }
 }
 
