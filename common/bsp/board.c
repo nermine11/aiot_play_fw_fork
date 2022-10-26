@@ -20,6 +20,13 @@ void board_init(void) {
     while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0);
 }
 
+void board_sleep(void) {
+    // wait for event
+    __SEV(); // set event
+    __WFE(); // wait for event
+    __WFE(); // wait for event
+}
+
 //=========================== private =========================================
 
 //=========================== interrupt handlers ==============================
