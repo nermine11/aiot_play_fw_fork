@@ -111,7 +111,6 @@ void _gpio_input_init(uint8_t pin, pin_toggle_cbt pin_toggle_cb) {
     gpio_vars.pin_in         = pin;
     gpio_vars.pin_toggle_cb  = pin_toggle_cb;
     
-    // configure pin as input with internal pull-up resistor enabled
     //  3           2            1           0
     // 1098 7654 3210 9876 5432 1098 7654 3210
     // .... .... .... .... .... .... .... ...A A: DIR:   0=Input
@@ -121,9 +120,8 @@ void _gpio_input_init(uint8_t pin, pin_toggle_cbt pin_toggle_cb) {
     // .... .... .... ..EE .... .... .... .... E: SENSE: 2=High
     // xxxx xxxx xxxx xx10 xxxx xxxx xxxx 0000 
     //    0    0    0    2    0    0    0    0 0x00020000
-    NRF_P0->PIN_CNF[pin] = 0x00020000;
+    NRF_P0->PIN_CNF[pin]     = 0x00020000;
 
-    // configure pin as input with internal pull-up resistor enabled
     //  3           2            1           0
     // 1098 7654 3210 9876 5432 1098 7654 3210
     // .... .... .... .... .... .... .... ..AA A: MODE:     01=Event
@@ -133,10 +131,10 @@ void _gpio_input_init(uint8_t pin, pin_toggle_cbt pin_toggle_cb) {
     // .... .... ...E .... .... .... .... .... E: OUTINIT:  no effect in event mode
     // xxxx xxxx xxx0 xx11 xx0? ???? xxxx xx01 
     //    0    0    0    3    0    0    0    1 0x00030001
-    NRF_GPIOTE->CONFIG[0] = 0x00030001 | (pin << 8);
+    NRF_GPIOTE->CONFIG[0]    = 0x00030001 | (pin << 8);
 
     // enable interrupts
-    NRF_GPIOTE->INTENSET = 0x00000001;
+    NRF_GPIOTE->INTENSET     = 0x00000001;
     NVIC_SetPriority(GPIOTE_IRQn,1);
     NVIC_ClearPendingIRQ(GPIOTE_IRQn);
     NVIC_EnableIRQ(GPIOTE_IRQn);
