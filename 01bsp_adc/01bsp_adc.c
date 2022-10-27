@@ -1,6 +1,6 @@
 #include <string.h>
 #include "board.h"
-#include "gpio.h"
+#include "adc.h"
 #include "busywait.h"
 
 //=========================== defines =========================================
@@ -10,15 +10,13 @@
 //=========================== variables =======================================
 
 typedef struct {
-    uint8_t num_events;
-    uint8_t pin_state;
+    int16_t  adc_val;
+    uint8_t  adc_num_reads;
 } app_vars_t;
 
 app_vars_t app_vars;
 
 //=========================== prototypes ======================================
-
-void pin_toggle_cb(uint8_t pin_state);
 
 //=========================== main ============================================
 
@@ -30,20 +28,21 @@ int main(void) {
     // bsp
     board_init();
 
-    // P0.02 as input
-    gpio_P002_input_init(pin_toggle_cb);
+    // ADC init
+    adc_init();
 
     // main loop
     while(1) {
         
-        // sleep
-        board_sleep();
+        // read
+        app_vars.adc_val = adc_read_P002();
+
+        // increment
+        app_vars.adc_num_reads++;
+
+        // wait
+        busywait_approx_500ms();
     }
 }
 
 //=========================== private =========================================
-
-void pin_toggle_cb(uint8_t pin_state) {
-    app_vars.num_events++;
-    app_vars.pin_state = pin_state;
-}
