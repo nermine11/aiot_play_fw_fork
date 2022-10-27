@@ -10,7 +10,7 @@
 //=========================== variables =======================================
 
 typedef struct {
-    int16_t  adc_val;
+    int16_t  adc_val_mV;
     uint8_t  adc_num_reads;
 } app_vars_t;
 
@@ -35,7 +35,7 @@ int main(void) {
     while(1) {
         
         // read
-        app_vars.adc_val = adc_read_P002();
+        app_vars.adc_val_mV = adc_read_P002();
 
         // increment
         app_vars.adc_num_reads++;
