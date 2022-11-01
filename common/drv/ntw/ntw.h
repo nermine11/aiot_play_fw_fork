@@ -1,6 +1,7 @@
-#ifndef __PERIODICTIMER_H
-#define __PERIODICTIMER_H
+#ifndef __NTW_H
+#define __NTW_H
 
+#include <stdbool.h>
 #include "nrf52833.h"
 
 //=========================== define ==========================================
@@ -14,7 +15,7 @@ typedef void (*ntw_receive_cbt)(uint8_t* buf, uint8_t bufLen);
 //=========================== prototypes ======================================
 
 void ntw_init(ntw_receive_cbt ntw_receive_cb);
-void ntw_transmit(uint8_t* buf, uint8_t bufLen);
+bool ntw_transmit(uint8_t* buf, uint8_t bufLen);
 
 /**
 \}
