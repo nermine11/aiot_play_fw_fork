@@ -21,7 +21,7 @@
       arm_target_device_name="nRF52833_xxAA"
       arm_target_interface_type="SWD"
       c_preprocessor_definitions="ARM_MATH_CM4;NRF52833_XXAA;__NRF_FAMILY"
-      c_user_include_directories="$(ProjectDir)/../common/CMSIS_5/CMSIS/Core/Include;$(ProjectDir)/../common/nRF/Device/Include;$(ProjectDir)/../common/bsp/;$(ProjectDir)/../common/sm_clib-REL-1.0.2.9/sm_clib/;$(ProjectDir)/../common/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play"
+      c_user_include_directories="$(ProjectDir)/../common/CMSIS_5/CMSIS/Core/Include;$(ProjectDir)/../common/nRF/Device/Include;$(ProjectDir)/../common/bsp/;"
       debug_register_definition_file="$(ProjectDir)/../common/nrf52833_Registers.xml"
       debug_stack_pointer_start="__stack_end__"
       debug_start_from_entry_point_symbol="No"
@@ -93,7 +93,7 @@
       arm_target_device_name="nRF52833_xxAA"
       arm_target_interface_type="SWD"
       c_preprocessor_definitions="ARM_MATH_CM4;NRF52833_XXAA;__NRF_FAMILY"
-      c_user_include_directories="$(ProjectDir)/../common/CMSIS_5/CMSIS/Core/Include;$(ProjectDir)/../common/nRF/Device/Include;$(ProjectDir)/../common/bsp/;$(ProjectDir)/../common/sm_clib-REL-1.0.2.9/sm_clib/;$(ProjectDir)/../common/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play"
+      c_user_include_directories="$(ProjectDir)/../common/CMSIS_5/CMSIS/Core/Include;$(ProjectDir)/../common/nRF/Device/Include;$(ProjectDir)/../common/bsp/;"
       debug_register_definition_file="$(ProjectDir)/../common/nrf52833_Registers.xml"
       debug_stack_pointer_start="__stack_end__"
       debug_start_from_entry_point_symbol="No"
@@ -165,7 +165,7 @@
       arm_target_device_name="nRF52833_xxAA"
       arm_target_interface_type="SWD"
       c_preprocessor_definitions="ARM_MATH_CM4;NRF52833_XXAA;__NRF_FAMILY"
-      c_user_include_directories="$(ProjectDir)/../common/CMSIS_5/CMSIS/Core/Include;$(ProjectDir)/../common/nRF/Device/Include;$(ProjectDir)/../common/bsp/;$(ProjectDir)/../common/sm_clib-REL-1.0.2.9/sm_clib/;$(ProjectDir)/../common/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play"
+      c_user_include_directories="$(ProjectDir)/../common/CMSIS_5/CMSIS/Core/Include;$(ProjectDir)/../common/nRF/Device/Include;$(ProjectDir)/../common/bsp/;"
       debug_register_definition_file="$(ProjectDir)/../common/nrf52833_Registers.xml"
       debug_stack_pointer_start="__stack_end__"
       debug_start_from_entry_point_symbol="No"
@@ -237,7 +237,7 @@
       arm_target_device_name="nRF52833_xxAA"
       arm_target_interface_type="SWD"
       c_preprocessor_definitions="ARM_MATH_CM4;NRF52833_XXAA;__NRF_FAMILY"
-      c_user_include_directories="$(ProjectDir)/../common/CMSIS_5/CMSIS/Core/Include;$(ProjectDir)/../common/nRF/Device/Include;$(ProjectDir)/../common/bsp/;$(ProjectDir)/../common/sm_clib-REL-1.0.2.9/sm_clib/;$(ProjectDir)/../common/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play"
+      c_user_include_directories="$(ProjectDir)/../common/CMSIS_5/CMSIS/Core/Include;$(ProjectDir)/../common/nRF/Device/Include;$(ProjectDir)/../common/bsp/;"
       debug_register_definition_file="$(ProjectDir)/../common/nrf52833_Registers.xml"
       debug_stack_pointer_start="__stack_end__"
       debug_start_from_entry_point_symbol="No"
@@ -309,7 +309,7 @@
       arm_target_device_name="nRF52833_xxAA"
       arm_target_interface_type="SWD"
       c_preprocessor_definitions="ARM_MATH_CM4;NRF52833_XXAA;__NRF_FAMILY"
-      c_user_include_directories="$(ProjectDir)/../common/CMSIS_5/CMSIS/Core/Include;$(ProjectDir)/../common/nRF/Device/Include;$(ProjectDir)/../common/bsp/;$(ProjectDir)/../common/sm_clib-REL-1.0.2.9/sm_clib/;$(ProjectDir)/../common/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play"
+      c_user_include_directories="$(ProjectDir)/../common/CMSIS_5/CMSIS/Core/Include;$(ProjectDir)/../common/nRF/Device/Include;$(ProjectDir)/../common/bsp/;"
       debug_register_definition_file="$(ProjectDir)/../common/nrf52833_Registers.xml"
       debug_stack_pointer_start="__stack_end__"
       debug_start_from_entry_point_symbol="No"
@@ -381,7 +381,7 @@
       arm_target_device_name="nRF52833_xxAA"
       arm_target_interface_type="SWD"
       c_preprocessor_definitions="ARM_MATH_CM4;NRF52833_XXAA;__NRF_FAMILY"
-      c_user_include_directories="$(ProjectDir)/../common/CMSIS_5/CMSIS/Core/Include;$(ProjectDir)/../common/nRF/Device/Include;$(ProjectDir)/../common/bsp/;$(ProjectDir)/../common/sm_clib-REL-1.0.2.9/sm_clib/;$(ProjectDir)/../common/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play"
+      c_user_include_directories="$(ProjectDir)/../common/CMSIS_5/CMSIS/Core/Include;$(ProjectDir)/../common/nRF/Device/Include;$(ProjectDir)/../common/bsp/;$(ProjectDir)/../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/;$(ProjectDir)/../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play"
       debug_register_definition_file="$(ProjectDir)/../common/nrf52833_Registers.xml"
       debug_stack_pointer_start="__stack_end__"
       debug_start_from_entry_point_symbol="No"
@@ -412,29 +412,29 @@
       <configuration Name="Common" filter="c;cpp;cxx;cc;h;s;asm;inc" />
       <file file_name="02drv_triangle.c" />
       <folder Name="sm_clib">
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_clib_build.h" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_clib_version.h" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_common.h" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_endianness.h" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_hdlc.c" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_hdlc.h" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmg.c" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmg.h" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmt.c" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmt.h" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_lock.h" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mg.c" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mg.h" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mt.c" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mt.h" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_uart.h" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_whmt.c" />
-        <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/dn_whmt.h" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_clib_build.h" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_clib_version.h" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_common.h" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_endianness.h" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_hdlc.c" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_hdlc.h" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmg.c" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmg.h" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmt.c" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmt.h" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_lock.h" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mg.c" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mg.h" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mt.c" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mt.h" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_uart.h" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_whmt.c" />
+        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_whmt.h" />
         <folder Name="ports">
           <folder Name="aiot_play">
-            <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play/dn_endianness.c" />
-            <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play/dn_lock.c" />
-            <file file_name="../common/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play/dn_uart.c" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play/dn_endianness.c" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play/dn_lock.c" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play/dn_uart.c" />
           </folder>
         </folder>
       </folder>
