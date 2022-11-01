@@ -411,33 +411,6 @@
     <folder Name="Source Files">
       <configuration Name="Common" filter="c;cpp;cxx;cc;h;s;asm;inc" />
       <file file_name="02drv_triangle.c" />
-      <folder Name="sm_clib">
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_clib_build.h" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_clib_version.h" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_common.h" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_endianness.h" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_hdlc.c" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_hdlc.h" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmg.c" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmg.h" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmt.c" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmt.h" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_lock.h" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mg.c" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mg.h" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mt.c" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mt.h" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_uart.h" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_whmt.c" />
-        <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_whmt.h" />
-        <folder Name="ports">
-          <folder Name="aiot_play">
-            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play/dn_endianness.c" />
-            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play/dn_lock.c" />
-            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play/dn_uart.c" />
-          </folder>
-        </folder>
-      </folder>
       <folder Name="bsp">
         <file file_name="../common/bsp/adc.c" />
         <file file_name="../common/bsp/adc.h" />
@@ -447,6 +420,39 @@
         <file file_name="../common/bsp/busywait.h" />
         <file file_name="../common/bsp/gpio.c" />
         <file file_name="../common/bsp/gpio.h" />
+      </folder>
+      <folder Name="drv">
+        <folder Name="ntw">
+          <folder Name="sm_clib">
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_clib_build.h" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_clib_version.h" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_common.h" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_endianness.h" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_hdlc.c" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_hdlc.h" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmg.c" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmg.h" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmt.c" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_ipmt.h" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_lock.h" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mg.c" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mg.h" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mt.c" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_serial_mt.h" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_uart.h" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_whmt.c" />
+            <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/dn_whmt.h" />
+            <folder Name="ports">
+              <folder Name="aiot_play">
+                <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play/dn_endianness.c" />
+                <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play/dn_lock.c" />
+                <file file_name="../common/drv/ntw/sm_clib-REL-1.0.2.9/sm_clib/ports/aiot_play/dn_uart.c" />
+              </folder>
+            </folder>
+          </folder>
+          <file file_name="../common/drv/ntw/ntw.c" />
+          <file file_name="../common/drv/ntw/ntw.h" />
+        </folder>
       </folder>
     </folder>
     <folder Name="System Files">
