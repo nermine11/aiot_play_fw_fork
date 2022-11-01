@@ -6,9 +6,11 @@
 
 //=========================== defines =========================================
 
+#define DATA_PERIOD_S 10
+
 //=========================== typedef =========================================
 
-//=========================== variables ========================&===============
+//=========================== variables =======================================
 
 typedef struct {
     uint8_t        txCounter;
@@ -17,7 +19,7 @@ typedef struct {
 app_vars_t app_vars;
 
 typedef struct {
-    uint32_t       numReceives;
+    uint32_t       numReceive;
     uint32_t       numTransmit;
     uint32_t       numTransmit_success;
     uint32_t       numTransmit_fail;
@@ -46,7 +48,7 @@ int main(void) {
 
     // initialize the periodic timer
     periodictimer_init(
-        10,                  // period_s
+        DATA_PERIOD_S,       // period_s
         _periodtimer_cb      // periodtimer_cb
     );
 
@@ -85,5 +87,5 @@ void _periodtimer_cb(void) {
 void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen) {
     
     // debug
-    app_dbg.numReceives++;
+    app_dbg.numReceive++;
 }

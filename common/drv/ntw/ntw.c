@@ -30,14 +30,15 @@ typedef void (*fsm_reply_callback)(void);
 //=========================== variables =======================================
 
 typedef struct {
+    // ipmt
+    bool                isOper;                            // true iff is operational
+    uint8_t             socketId;                          // ID of the mote's UDP socket
+    uint8_t             replyBuf[MAX_FRAME_LENGTH];        // holds notifications from ipmt
+    uint8_t             notifBuf[MAX_FRAME_LENGTH];        // notifications buffer internal to ipmt
     // fsm
     fsm_timer_callback  fsmCb;
     // reply
     fsm_reply_callback  replyCb;
-    // ipmt
-    uint8_t             socketId;                          // ID of the mote's UDP socket
-    uint8_t             replyBuf[MAX_FRAME_LENGTH];        // holds notifications from ipmt
-    uint8_t             notifBuf[MAX_FRAME_LENGTH];        // notifications buffer internal to ipmt
 } ntw_vars_t;
 
 ntw_vars_t ntw_vars;
@@ -51,7 +52,7 @@ typedef struct {
     uint32_t            num_calls_api_bindSocket_reply;
     uint32_t            num_calls_api_join;
     uint32_t            num_calls_api_join_reply;
-    uint32_t            num_calls_api_sendTo_now;
+    uint32_t            num_calls_api_sendTo;
     uint32_t            num_calls_api_sendTo_reply;
     uint32_t            num_notif_EVENTS;
     uint32_t            num_notif_RECEIVE;
@@ -80,7 +81,7 @@ void     api_bindSocket(void);
 void     api_bindSocket_reply(void);
 void     api_join(void);
 void     api_join_reply(void);
-void     api_sendTo(void);
+bool     api_sendTo(uint8_t* buf, uint8_t bufLen);
 void     api_sendTo_reply(void);
 // bsp
 void     lfxtal_start(void);
@@ -108,8 +109,7 @@ void ntw_init(ntw_receive_cbt ntw_receive_cb) {
 }
 
 bool ntw_transmit(uint8_t* buf, uint8_t bufLen) {
-    // TODO
-    return true;
+    return api_sendTo(buf, bufLen);
 }
 
 //=========================== private =========================================
@@ -169,10 +169,11 @@ void dn_ipmt_notif_cb(uint8_t cmdId, uint8_t subCmdId) {
           // handle
           switch (dn_ipmt_events_notif->state) {
               case MOTE_STATE_IDLE:
+                  ntw_vars.isOper = false;
                   fsm_scheduleEvent(CMD_PERIOD,api_getMoteStatus);
                   break;
               case MOTE_STATE_OPERATIONAL:
-                  fsm_scheduleEvent(CMD_PERIOD,api_sendTo);
+                  ntw_vars.isOper = true;
                   break;
               default:
                   // nothing to do
@@ -244,12 +245,14 @@ void api_getMoteStatus_reply(void) {
    // choose next step
    switch (reply->state) {
       case MOTE_STATE_IDLE:
+         ntw_vars.isOper = false;
          fsm_scheduleEvent(CMD_PERIOD, &api_openSocket);
          break;
       case MOTE_STATE_OPERATIONAL:
-         fsm_scheduleEvent(CMD_PERIOD, api_sendTo);
+         ntw_vars.isOper = true;
          break;
       default:
+         ntw_vars.isOper = false;
          fsm_scheduleEvent(CMD_PERIOD, api_getMoteStatus);
          break;
    }
@@ -361,68 +364,62 @@ void api_join_reply(void) {
 
 // sendTo
 
-void api_sendTo(void) {
-   /*
-   uint8_t  payload[2];
+bool api_sendTo(uint8_t* buf, uint8_t bufLen) {
+   bool     returnVal;
    uint8_t  dest_addr[16];
+   dn_err_t dn_err;
    
-   // send only every DATA_PERIOD_S seconds
-   if (ntw_vars.secUntilTx>0) {
-      
-      // decrement number of second to still wait
-      ntw_vars.secUntilTx--;
-      
-      // cancel timeout
-      fsm_cancelEvent();
-      
-      // choose next step
-      fsm_scheduleEvent(ONE_SEC, api_sendTo);
-      
-      return;
+   if (ntw_vars.isOper==true) {
+      // mote is operational
+
+      // debug
+      ntw_dbg.num_calls_api_sendTo++;
+
+      // arm callback
+      fsm_setCallback(api_sendTo_reply);
+
+      // populate address
+      memcpy(dest_addr,ipv6Addr_manager,16);
+
+      // issue function
+      dn_err = dn_ipmt_sendTo(
+        ntw_vars.socketId,                                   // socketId
+        dest_addr,                                           // destIP
+        DST_PORT,                                            // destPort
+        SERVICE_TYPE_BW,                                     // serviceType
+        0,                                                   // priority
+        0xffff,                                              // packetId
+        buf,                                                 // payload
+        bufLen,                                              // payloadLen
+        (dn_ipmt_sendTo_rpt*)(ntw_vars.replyBuf)             // reply
+      );
+
+      // prepare returnVal
+      if (dn_err==DN_ERR_NONE) {
+          returnVal = true;
+      } else {
+          returnVal = false;
+      }
+
+      // schedule timeout event
+      fsm_scheduleEvent(SERIAL_RESPONSE_TIMEOUT, api_response_timeout);
    } else {
-      ntw_vars.secUntilTx = DATA_PERIOD_S;
+      // mote is NOT operational
+
+      // cannot proceed
+      returnVal = false;
    }
 
-   // debug
-   ntw_dbg.num_calls_api_sendTo_now++;
-   
-   // arm callback
-   fsm_setCallback(api_sendTo_reply);
-   
-   // create payload
-   dn_write_uint16_t(payload, nextValue());
-   memcpy(dest_addr,ipv6Addr_manager,16);
-   
-   // issue function
-   dn_ipmt_sendTo(
-      ntw_vars.socketId,                                   // socketId
-      dest_addr,                                           // destIP
-      DST_PORT,                                            // destPort
-      SERVICE_TYPE_BW,                                     // serviceType
-      0,                                                   // priority
-      0xffff,                                              // packetId
-      payload,                                             // payload
-      sizeof(payload),                                     // payloadLen
-      (dn_ipmt_sendTo_rpt*)(ntw_vars.replyBuf)             // reply
-   );
-
-   // schedule timeout event
-   fsm_scheduleEvent(SERIAL_RESPONSE_TIMEOUT, api_response_timeout);
-   */
+   return returnVal;
 }
 
 void api_sendTo_reply(void) {
-    /*
    
    // debug
    ntw_dbg.num_calls_api_sendTo_reply++;
 
    // cancel timeout
    fsm_cancelEvent();
-   
-   // choose next step
-   fsm_scheduleEvent(ONE_SEC, api_sendTo);
-   */
 }
 
 //=========================== interrupt handlers ==============================
