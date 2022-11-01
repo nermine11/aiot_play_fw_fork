@@ -1,7 +1,7 @@
 #include <string.h>
 #include "ntw.h"
 
-//=========================== define ==========================================
+//=========================== defines =========================================
 
 //=========================== variables =======================================
 
@@ -21,7 +21,7 @@ ntw_dbg_t ntw_dbg;
 
 //=========================== public ==========================================
 
-void ntw_init(void) {
+void ntw_init(ntw_receive_cbt ntw_receive_cb) {
 
     // reset variables
     memset(&ntw_vars,0x00,sizeof(ntw_vars_t));
