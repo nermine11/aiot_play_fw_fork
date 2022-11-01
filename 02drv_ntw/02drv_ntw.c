@@ -63,7 +63,7 @@ int main(void) {
 //=========================== private =========================================
 
 void _periodtimer_cb(void) {
-    uint8_t txBuf[1];
+    uint8_t txBuf[4];
     bool    success;
 
     // increment
@@ -71,6 +71,9 @@ void _periodtimer_cb(void) {
 
     // fill txBuf
     txBuf[0] = app_vars.txCounter;
+    txBuf[1] = 0x01;
+    txBuf[2] = 0x02;
+    txBuf[3] = 0x03;
 
     // send txBuf
     success = ntw_transmit(txBuf,sizeof(txBuf));
