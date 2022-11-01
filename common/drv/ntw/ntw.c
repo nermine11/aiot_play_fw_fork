@@ -30,6 +30,8 @@ typedef void (*fsm_reply_callback)(void);
 //=========================== variables =======================================
 
 typedef struct {
+    // interface
+    ntw_receive_cbt     ntw_receive_cb;
     // ipmt
     bool                isOper;                            // true iff is operational
     uint8_t             socketId;                          // ID of the mote's UDP socket
@@ -95,6 +97,9 @@ void ntw_init(ntw_receive_cbt ntw_receive_cb) {
     memset(&ntw_vars,0x00,sizeof(ntw_vars_t));
     ntw_vars.socketId = 22; // default value
     memset(&ntw_dbg, 0x00,sizeof(ntw_dbg_t));
+
+    // store params
+    ntw_vars.ntw_receive_cb = ntw_receive_cb;
 
     // initialize the ipmt module
     dn_ipmt_init(
@@ -188,7 +193,11 @@ void dn_ipmt_notif_cb(uint8_t cmdId, uint8_t subCmdId) {
           // parse
           dn_ipmt_receive_notif = (dn_ipmt_receive_nt*)ntw_vars.notifBuf;
 
-          // TODO: do something with received code
+          // notify app
+          ntw_vars.ntw_receive_cb(
+              dn_ipmt_receive_notif->payload,
+              dn_ipmt_receive_notif->payloadLen
+          );
 
       default:
          // nothing to do
