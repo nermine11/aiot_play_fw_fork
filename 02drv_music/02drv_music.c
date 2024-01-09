@@ -20,7 +20,7 @@ int main(void) {
 
     // music
     music_init();
-    music_play(SONGTITLE_DEFAULT);
+    music_play(SONGTITLE_STAR_WARS);
     
     // main loop
     while(1) {
