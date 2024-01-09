@@ -3,7 +3,11 @@
 
 //=========================== variables =======================================
 
-uint16_t pwm_comp[4];
+typedef struct {
+    uint16_t   pwm_params[4];
+} pwm_vars_t;
+
+pwm_vars_t pwm_vars;
 
 //=========================== prototypes ======================================
 
@@ -11,6 +15,9 @@ uint16_t pwm_comp[4];
 
 void pwm_init(void) {
     
+    // clear module variables
+    memset(&pwm_vars,0x00,sizeof(pwm_vars_t));
+
     //=== GPIO
 
     //  3           2            1           0
@@ -72,8 +79,8 @@ void pwm_init(void) {
     // 0xxx xxxx xxxx xxxx xxxx xxx0 xxxx xx10 
     //    0    0    0    0    0    0    0    2 0x00000002
     NRF_PWM0->DECODER             = 0x00000002;
-    NRF_PWM0->SEQ[0].PTR          = (uint32_t)(pwm_comp);
-    NRF_PWM0->SEQ[0].CNT          = (sizeof(pwm_comp) / sizeof(uint16_t));
+    NRF_PWM0->SEQ[0].PTR          = (uint32_t)(pwm_vars.pwm_params);
+    NRF_PWM0->SEQ[0].CNT          = (sizeof(pwm_vars.pwm_params) / sizeof(uint16_t));
 
     //  3           2            1           0
     // 1098 7654 3210 9876 5432 1098 7654 3210
@@ -99,10 +106,10 @@ void pwm_setperiod(uint16_t period) {
     }
 
     NRF_PWM0->COUNTERTOP          = period;
-    pwm_comp[0]                   = period/2;
-    pwm_comp[1]                   = 0x8000 | period/2; // POLARITY: 0x8000==FallingEdge
-    pwm_comp[2]                   = 0;
-    pwm_comp[3]                   = 0;
+    pwm_vars.pwm_params[0]        = 0x0000 | period/2; // POLARITY: 0x0000==RisingEdge
+    pwm_vars.pwm_params[1]        = 0x8000 | period/2; // POLARITY: 0x8000==FallingEdge
+    pwm_vars.pwm_params[2]        = 0;
+    pwm_vars.pwm_params[3]        = 0;
 
     NRF_PWM0->EVENTS_SEQSTARTED[0]=0;
     NRF_PWM0->TASKS_SEQSTART[0]   = 0x00000001;
