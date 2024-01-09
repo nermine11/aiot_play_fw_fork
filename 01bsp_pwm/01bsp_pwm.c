@@ -20,7 +20,7 @@ int main(void) {
 
     // pwm
     pwm_init();
-    pwm_set_freq(440);
+    pwm_setperiod(NOTE_SI_3);
       
     // main loop
     while(1) {
