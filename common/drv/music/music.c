@@ -1,8 +1,16 @@
 #include <string.h>
+#include <stdbool.h>
 #include "music.h"
 #include "pwm.h"
 
 //=========================== variables =======================================
+
+typedef struct {
+    bool    song_playing;
+    note_t* last_note;
+} music_dbg_t;
+
+music_dbg_t music_dbg;
 
 typedef struct {
     uint32_t noteIdx;
@@ -45,17 +53,17 @@ void music_play(songtitle_t songtitle) {
     
     switch (songtitle) {
         case SONGTITLE_STAR_WARS:
-            music_vars.notes      = SONGNOTES_STAR_WARS;
-            music_vars.numnotes   = sizeof(SONGNOTES_STAR_WARS)/sizeof(note_t);
+            music_vars.notes      = (note_t*)SONGNOTES_STAR_WARS_TRACK_3;
+            music_vars.numnotes   = sizeof(SONGNOTES_STAR_WARS_TRACK_3)/sizeof(note_t);
             music_vars.speed      = SONGSPEED[SONGTITLE_STAR_WARS];
             break;
         case SONGTITLE_HARRY_POTTER:
-            music_vars.notes      = SONGNOTES_HARRY_POTTER;
+            music_vars.notes      = (note_t*)SONGNOTES_HARRY_POTTER;
             music_vars.numnotes   = sizeof(SONGNOTES_HARRY_POTTER)/sizeof(note_t);
             music_vars.speed      = SONGSPEED[SONGTITLE_HARRY_POTTER];
             break;
         default:
-            music_vars.notes      = SONGNOTES_DEFAULT;
+            music_vars.notes      = (note_t*)SONGNOTES_DEFAULT;
             music_vars.numnotes   = sizeof(SONGNOTES_DEFAULT)/sizeof(note_t);
             music_vars.speed      = SONGSPEED[SONGTITLE_DEFAULT];
             break;
@@ -69,12 +77,14 @@ void music_play(songtitle_t songtitle) {
 //=========================== private =========================================
 
 static void _start_song(uint16_t speed) {
+    music_dbg.song_playing   = true;
     music_vars.noteIdx       = 0;
     NRF_RTC1->PRESCALER      = speed;
     NRF_RTC1->TASKS_START    = 0x00000001;
 }
 
 static void _play_cur_note(void) {
+    music_dbg.last_note      = &music_vars.notes[music_vars.noteIdx];
     pwm_setperiod(music_vars.notes[music_vars.noteIdx].val);
     NRF_RTC1->CC[0]          = music_vars.notes[music_vars.noteIdx].duration;
 }
@@ -82,6 +92,7 @@ static void _play_cur_note(void) {
 static void _end_song(void) {
     NRF_RTC1->TASKS_STOP     = 0x00000001;
     pwm_setperiod(NOTE_NONE);
+    music_dbg.song_playing   = false;
 }
 
 //=========================== interrupt handlers ==============================
