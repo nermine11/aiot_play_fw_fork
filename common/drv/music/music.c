@@ -6,8 +6,10 @@
 //=========================== variables =======================================
 
 typedef struct {
-    bool    song_playing;
-    note_t* last_note;
+    bool     song_playing;
+    note_t*  last_note;
+    uint32_t num_music_init;
+    uint32_t num_music_play;
 } music_dbg_t;
 
 music_dbg_t music_dbg;
@@ -31,43 +33,63 @@ static void _end_song(void);
 
 void music_init(void) {
 
-    //=== PWM
+    // debug
+    music_dbg.num_music_init++;
+
+    // pwm
     pwm_init();
 
-    //=== RTC1
+    //=== RTC2
     
     // 1098 7654 3210 9876 5432 1098 7654 3210
     // xxxx xxxx xxxx FEDC xxxx xxxx xxxx xxBA (C=compare 0)
     // 0000 0000 0000 0001 0000 0000 0000 0000 
     //    0    0    0    1    0    0    0    0 0x00010000
-    NRF_RTC1->EVTENSET                 = 0x00010000;       // enable compare 0 event routing
-    NRF_RTC1->INTENSET                 = 0x00010000;       // enable compare 0 interrupts
+    NRF_RTC2->EVTENSET                 = 0x00010000;       // enable compare 0 event routing
+    NRF_RTC2->INTENSET                 = 0x00010000;       // enable compare 0 interrupts
 
     // enable interrupts
-    NVIC_SetPriority(RTC1_IRQn, 1);
-    NVIC_ClearPendingIRQ(RTC1_IRQn);
-    NVIC_EnableIRQ(RTC1_IRQn);
+    NVIC_SetPriority(RTC2_IRQn, 1);
+    NVIC_ClearPendingIRQ(RTC2_IRQn);
+    NVIC_EnableIRQ(RTC2_IRQn);
 }
 
 void music_play(songtitle_t songtitle) {
-    
-    switch (songtitle) {
-        case SONGTITLE_STAR_WARS:
-            music_vars.notes      = (note_t*)SONGNOTES_STAR_WARS_TRACK_3;
-            music_vars.numnotes   = sizeof(SONGNOTES_STAR_WARS_TRACK_3)/sizeof(note_t);
-            music_vars.speed      = SONGSPEED[SONGTITLE_STAR_WARS];
+    uint32_t deviceAddr;
+
+    // debug
+    music_dbg.num_music_play++;
+
+    deviceAddr = NRF_FICR->DEVICEADDR[0];
+    switch (deviceAddr) {
+        case 0x44c36145:
+            music_vars.notes      = (note_t*)SONGNOTES_STAR_WARS_TRACK_0; // Bassoon
+            music_vars.numnotes   = sizeof(SONGNOTES_STAR_WARS_TRACK_0)/sizeof(note_t);
             break;
-        case SONGTITLE_HARRY_POTTER:
-            music_vars.notes      = (note_t*)SONGNOTES_HARRY_POTTER;
-            music_vars.numnotes   = sizeof(SONGNOTES_HARRY_POTTER)/sizeof(note_t);
-            music_vars.speed      = SONGSPEED[SONGTITLE_HARRY_POTTER];
+        case 0xe91644b9:
+            music_vars.notes      = (note_t*)SONGNOTES_STAR_WARS_TRACK_2; // Horns
+            music_vars.numnotes   = sizeof(SONGNOTES_STAR_WARS_TRACK_2)/sizeof(note_t);
             break;
+        case 0xba0a3a2a:
+            music_vars.notes      = (note_t*)SONGNOTES_STAR_WARS_TRACK_4; // Trombones
+            music_vars.numnotes   = sizeof(SONGNOTES_STAR_WARS_TRACK_4)/sizeof(note_t);
+            break;
+        case 0xd953d128:
+            music_vars.notes      = (note_t*)SONGNOTES_STAR_WARS_TRACK_7; // Strings
+            music_vars.numnotes   = sizeof(SONGNOTES_STAR_WARS_TRACK_7)/sizeof(note_t);
+            break;
+        case 0x4212f3ae:
+            music_vars.notes      = (note_t*)SONGNOTES_STAR_WARS_TRACK_8; // Strings 2
+            music_vars.numnotes   = sizeof(SONGNOTES_STAR_WARS_TRACK_8)/sizeof(note_t);
+            break;
+        case 0x546c3af1:
+        case 0xfb1c7899:
         default:
-            music_vars.notes      = (note_t*)SONGNOTES_DEFAULT;
-            music_vars.numnotes   = sizeof(SONGNOTES_DEFAULT)/sizeof(note_t);
-            music_vars.speed      = SONGSPEED[SONGTITLE_DEFAULT];
+            music_vars.notes      = (note_t*)SONGNOTES_STAR_WARS_TRACK_3; // Trumpets
+            music_vars.numnotes   = sizeof(SONGNOTES_STAR_WARS_TRACK_3)/sizeof(note_t);
             break;
     }
+    music_vars.speed      = SONGSPEED[SONGTITLE_STAR_WARS];
 
     // play first note
     _start_song(music_vars.speed);
@@ -79,34 +101,37 @@ void music_play(songtitle_t songtitle) {
 static void _start_song(uint16_t speed) {
     music_dbg.song_playing   = true;
     music_vars.noteIdx       = 0;
-    NRF_RTC1->PRESCALER      = speed;
-    NRF_RTC1->TASKS_START    = 0x00000001;
+    NRF_RTC2->PRESCALER      = speed;
+    NRF_RTC2->TASKS_START    = 0x00000001;
 }
 
 static void _play_cur_note(void) {
     music_dbg.last_note      = &music_vars.notes[music_vars.noteIdx];
     pwm_setperiod(music_vars.notes[music_vars.noteIdx].val);
-    NRF_RTC1->CC[0]          = music_vars.notes[music_vars.noteIdx].duration;
+    NRF_RTC2->CC[0]          = music_vars.notes[music_vars.noteIdx].duration;
 }
 
 static void _end_song(void) {
-    NRF_RTC1->TASKS_STOP     = 0x00000001;
+    NRF_RTC2->TASKS_STOP     = 0x00000001;
     pwm_setperiod(NOTE_NONE);
     music_dbg.song_playing   = false;
+
+    // poipoipoi
+    NVIC_SystemReset();
 }
 
 //=========================== interrupt handlers ==============================
 
-void RTC1_IRQHandler(void) {
+void RTC2_IRQHandler(void) {
 
     // handle compare[0]
-    if (NRF_RTC1->EVENTS_COMPARE[0] == 0x00000001 ) {
+    if (NRF_RTC2->EVENTS_COMPARE[0] == 0x00000001 ) {
 
         // clear flag
-        NRF_RTC1->EVENTS_COMPARE[0]    = 0x00000000;
+        NRF_RTC2->EVENTS_COMPARE[0]    = 0x00000000;
 
         // clear COUNTER
-        NRF_RTC1->TASKS_CLEAR          = 0x00000001;
+        NRF_RTC2->TASKS_CLEAR          = 0x00000001;
 
         // bump
         music_vars.noteIdx++;
