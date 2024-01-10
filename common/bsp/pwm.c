@@ -98,14 +98,14 @@ void pwm_init(void) {
 }
 
 void pwm_setperiod(uint16_t period) {
-    
-    if(NRF_PWM0->EVENTS_SEQSTARTED[0]==1) {
+
+    if (NRF_PWM0->EVENTS_SEQSTARTED[0]==1) {
         NRF_PWM0->EVENTS_STOPPED  = 0;
         NRF_PWM0->TASKS_STOP      = 0x00000001;
         while(NRF_PWM0->EVENTS_STOPPED==0);
     }
 
-    NRF_PWM0->COUNTERTOP          = period;
+    NRF_PWM0->COUNTERTOP          = period & 0x7fff; // COUNTERTOP is a 24-bit register
     pwm_vars.pwm_params[0]        = 0x0000 | period/2; // POLARITY: 0x0000==RisingEdge
     pwm_vars.pwm_params[1]        = 0x8000 | period/2; // POLARITY: 0x8000==FallingEdge
     pwm_vars.pwm_params[2]        = 0;
