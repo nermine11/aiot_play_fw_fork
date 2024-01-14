@@ -31,6 +31,7 @@ typedef void (*fsm_reply_callback)(void);
 
 typedef struct {
     // interface
+    ntw_getMoteId_cbt   ntw_getMoteId_cb;
     ntw_getTime_cbt     ntw_getTime_cb;
     ntw_receive_cbt     ntw_receive_cb;
     // ipmt
@@ -57,6 +58,8 @@ typedef struct {
     uint32_t            num_calls_api_setJoinDutyCycle_reply;
     uint32_t            num_calls_api_join;
     uint32_t            num_calls_api_join_reply;
+    uint32_t            num_calls_api_getMoteId;
+    uint32_t            num_calls_api_getMoteId_reply;
     uint32_t            num_calls_api_getTime;
     uint32_t            num_calls_api_getTime_reply;
     uint32_t            num_calls_api_sendTo;
@@ -79,6 +82,7 @@ void     fsm_setCallback(fsm_reply_callback cb);
 void     dn_ipmt_notif_cb(uint8_t cmdId, uint8_t subCmdId);
 void     dn_ipmt_reply_cb(uint8_t cmdId);
 // api
+// (run automatically by this module)
 void     api_response_timeout(void);
 void     api_getMoteStatus(void);
 void     api_getMoteStatus_reply(void);
@@ -90,6 +94,9 @@ void     api_setJoinDutyCycle(void);
 void     api_setJoinDutyCycle_reply(void);
 void     api_join(void);
 void     api_join_reply(void);
+// (called by upper stack)
+bool     api_getMoteId(void);
+void     api_getMoteId_reply(void);
 bool     api_getTime(void);
 void     api_getTime_reply(void);
 bool     api_sendTo(uint8_t* buf, uint8_t bufLen);
@@ -100,7 +107,7 @@ void     hfclock_start(void);
 
 //=========================== public ==========================================
 
-void ntw_init(ntw_getTime_cbt ntw_getTime_cb, ntw_receive_cbt ntw_receive_cb) {
+void ntw_init(ntw_getMoteId_cbt ntw_getMoteId_cb, ntw_getTime_cbt ntw_getTime_cb, ntw_receive_cbt ntw_receive_cb) {
 
     // reset variables
     memset(&ntw_vars,0x00,sizeof(ntw_vars_t));
@@ -108,8 +115,9 @@ void ntw_init(ntw_getTime_cbt ntw_getTime_cb, ntw_receive_cbt ntw_receive_cb) {
     memset(&ntw_dbg, 0x00,sizeof(ntw_dbg_t));
 
     // store params
-    ntw_vars.ntw_getTime_cb = ntw_getTime_cb;
-    ntw_vars.ntw_receive_cb = ntw_receive_cb;
+    ntw_vars.ntw_getMoteId_cb     = ntw_getMoteId_cb;
+    ntw_vars.ntw_getTime_cb       = ntw_getTime_cb;
+    ntw_vars.ntw_receive_cb       = ntw_receive_cb;
 
     // initialize the ipmt module
     dn_ipmt_init(
@@ -121,6 +129,10 @@ void ntw_init(ntw_getTime_cbt ntw_getTime_cb, ntw_receive_cbt ntw_receive_cb) {
 
     // schedule the first event
     fsm_scheduleEvent(CMD_PERIOD, &api_getMoteStatus);
+}
+
+bool ntw_getMoteId(void) {
+    return api_getMoteId();
 }
 
 bool ntw_getTime(void) {
@@ -417,7 +429,57 @@ void api_join_reply(void) {
    // notification
 }
 
-// getParameter_time
+// getMoteId
+
+bool api_getMoteId(void) {
+    bool     returnVal;
+   
+    if (ntw_vars.isOper==true) {
+        // mote is operational
+
+        // debug
+        ntw_dbg.num_calls_api_getMoteId++;
+
+        // arm callback
+        fsm_setCallback(api_getMoteId_reply);
+   
+        // issue function
+        dn_ipmt_getParameter_moteId(
+           (dn_ipmt_getParameter_moteId_rpt*)(ntw_vars.replyBuf)
+        );
+
+        // schedule timeout event
+        fsm_scheduleEvent(SERIAL_RESPONSE_TIMEOUT, api_response_timeout);
+
+        // success
+        returnVal = true;
+    } else {
+        // mote is NOT operational
+
+        // cannot proceed
+        returnVal = false;
+    }
+
+    return returnVal;
+}
+
+void api_getMoteId_reply(void) {
+   dn_ipmt_getParameter_moteId_rpt* reply;
+   
+   // debug
+   ntw_dbg.num_calls_api_getMoteId_reply++;
+
+   // cancel timeout
+   fsm_cancelEvent();
+   
+   // parse reply
+   reply = (dn_ipmt_getParameter_moteId_rpt*)ntw_vars.replyBuf;
+   
+   // handle
+   ntw_vars.ntw_getMoteId_cb(reply);
+}
+
+// getTime
 
 bool api_getTime(void) {
     bool     returnVal;

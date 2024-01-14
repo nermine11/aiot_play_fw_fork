@@ -21,6 +21,7 @@ typedef enum {
 
 typedef struct {
     step_t         step;
+    uint16_t       moteId;
     uint8_t        asn[5];
     uint32_t       deviceAddr;
 } app_vars_t;
@@ -28,8 +29,9 @@ typedef struct {
 app_vars_t app_vars;
 
 typedef struct {
-    uint32_t       numGetTime;
-    uint32_t       numReceive;
+    uint32_t       numcalls_ntw_getMoteId_cb;
+    uint32_t       numcalls_ntw_getTime_cb;
+    uint32_t       numcalls_ntw_receive_cb;
     uint32_t       num_STEP_1_WAITING_ASN3;
     uint32_t       num_STEP_2_WAITING_ASN4_ROLLOVER;
     uint32_t       num_rc_error;
@@ -39,6 +41,7 @@ app_dbg_t app_dbg;
 
 //=========================== prototypes ======================================
 
+void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply);
 void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply);
 void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen);
 
@@ -56,8 +59,9 @@ int main(void) {
 
     // ntw
     ntw_init(
-        _ntw_getTime_cb, // ntw_getTime_cb
-        _ntw_receive_cb  // ntw_receive_cb
+        _ntw_getMoteId_cb,   // ntw_getMoteId_cb
+        _ntw_getTime_cb,     // ntw_getTime_cb
+        _ntw_receive_cb      // ntw_receive_cb
     );
 
     // music
@@ -92,12 +96,28 @@ int main(void) {
 
 //=========================== private =========================================
 
+void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply) {
+
+    // debug
+    app_dbg.numcalls_ntw_getMoteId_cb++;
+
+    do {
+        if (reply->RC!=DN_ERR_NONE) {
+            app_dbg.num_rc_error++;
+            break;
+        }
+        
+        // store
+        app_vars.moteId = reply->moteId;
+    } while(0);
+}
+
 void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
     uint32_t num_asns_to_wait;
     uint32_t num_ticks_to_wait;
 
     // debug
-    app_dbg.numGetTime++;
+    app_dbg.numcalls_ntw_getTime_cb++;
 
     do {
         if (reply->RC!=DN_ERR_NONE) {
@@ -138,7 +158,7 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
 void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen) {
     
     // debug
-    app_dbg.numReceive++;
+    app_dbg.numcalls_ntw_receive_cb++;
 }
 
 //=========================== interrupt handlers ==============================
@@ -155,6 +175,10 @@ void RTC0_IRQHandler(void) {
         NRF_RTC0->TASKS_CLEAR          = 0x00000001;
 
         // handle
-        ntw_getTime();
+        if (app_vars.moteId==0x000) {
+            ntw_getMoteId();
+        } else {
+            ntw_getTime();
+        }
     }
 }
