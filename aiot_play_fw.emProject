@@ -671,6 +671,7 @@
         <folder Name="music">
           <file file_name="../common/drv/music/music.c" />
           <file file_name="../common/drv/music/music.h" />
+          <file file_name="../common/drv/music/Star_Wars_Medley.h" />
         </folder>
       </folder>
       <file file_name="02drv_music.c" />

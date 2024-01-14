@@ -41,7 +41,7 @@ static const uint16_t SONGSPEED[] = {
     SPEED_60bpm,  // SONGTITLE_DEFAULT
 };
 
-#include "song_STAR_WARS.h"
+#include "Star_Wars_Medley.h"
 
 static const note_t SONGNOTES_HARRY_POTTER[] = {
     {NOTE_DO_3,  8},

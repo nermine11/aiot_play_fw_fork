@@ -22,7 +22,7 @@ int main(void) {
 
     // pwm
     pwm_init();
-    pwm_setperiod(NOTE_SI_3);
+    pwm_setperiod(NOTE_LA_4);
       
     // main loop
     while(1) {
