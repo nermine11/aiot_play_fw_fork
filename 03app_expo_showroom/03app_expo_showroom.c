@@ -22,7 +22,6 @@ typedef enum {
 typedef struct {
     step_t         step;
     uint8_t        asn[5];
-    dn_err_t       rc;
     uint32_t       deviceAddr;
 } app_vars_t;
 
