@@ -12,6 +12,8 @@
 
 //=========================== variables =======================================
 
+uint8_t track;
+
 //=========================== prototypes ======================================
 
 void _periodtimer_cb(void);
@@ -27,7 +29,7 @@ int main(void) {
     music_init();
 
     // initialize the periodic timer
-    music_play(SONGTITLE_HARRY_POTTER);
+    music_play(SONGTITLE_HARRY_POTTER,track++);
     periodictimer_init(
         PLAY_PERIOD_S,       // period_s
         _periodtimer_cb      // periodtimer_cb
@@ -44,5 +46,5 @@ int main(void) {
 //=========================== private =========================================
 
 void _periodtimer_cb(void) {
-     music_play(SONGTITLE_STAR_WARS);
+     music_play(SONGTITLE_HARRY_POTTER,track++);
 }

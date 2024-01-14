@@ -2,6 +2,7 @@
 #define __Star_Wars_Medley_H
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_0[] = { // Strings
+    {NOTE_NONE,   480},
     {NOTE_SIb_5,  1285},
     {NOTE_NONE,   58},
     {NOTE_LA_5,   23},
@@ -213,6 +214,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_0[] = { // Strings
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_1[] = { // String 2
+    {NOTE_NONE,   480},
     {NOTE_RE_4,   150},
     {NOTE_NONE,   1481},
     {NOTE_SIb_1,  4},
@@ -427,6 +429,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_1[] = { // String 2
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_2[] = { // Horns
+    {NOTE_NONE,   602},
     {NOTE_SIb_3,  163},
     {NOTE_NONE,   17},
     {NOTE_SIb_3,  22},
@@ -559,6 +562,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_2[] = { // Horns
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_3[] = { // String 2-
+    {NOTE_NONE,   480},
     {NOTE_SIb_4,  195},
     {NOTE_NONE,   1436},
     {NOTE_FA_2,   6},
@@ -715,6 +719,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_3[] = { // String 2-
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_4[] = { // Trumpets
+    {NOTE_NONE,   1015},
     {NOTE_SIb_4,  10},
     {NOTE_NONE,   5},
     {NOTE_SIb_4,  10},
@@ -861,6 +866,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_4[] = { // Trumpets
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_5[] = { // Horns-
+    {NOTE_NONE,   1205},
     {NOTE_FA_4,   100},
     {NOTE_NONE,   15},
     {NOTE_MIb_4,  17},
@@ -940,15 +946,15 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_5[] = { // Horns-
     {NOTE_RE_4,   57},
     {NOTE_NONE,   10},
     {NOTE_SIb_3,  220},
-    {NOTE_NONE,   481},
-    {NOTE_FA_4,   20},
-    {NOTE_NONE,   -224},
+    {NOTE_NONE,   277},
     {NOTE_SOLb_4, 70},
     {NOTE_NONE,   16},
     {NOTE_FA_4,   18},
     {NOTE_NONE,   14},
     {NOTE_SOLb_4, 73},
-    {NOTE_NONE,   48},
+    {NOTE_NONE,   13},
+    {NOTE_FA_4,   20},
+    {NOTE_NONE,   15},
     {NOTE_MIb_4,  63},
     {NOTE_NONE,   19},
     {NOTE_SIb_3,  16},
@@ -959,6 +965,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_5[] = { // Horns-
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_6[] = { // Trombones
+    {NOTE_NONE,   480},
     {NOTE_SIb_3,  163},
     {NOTE_NONE,   17},
     {NOTE_SIb_3,  15},
@@ -1137,6 +1144,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_6[] = { // Trombones
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_7[] = { // Strings-
+    {NOTE_NONE,   485},
     {NOTE_RE_4,   465},
     {NOTE_NONE,   893},
     {NOTE_SIb_5,  26},
@@ -1253,6 +1261,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_7[] = { // Strings-
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_8[] = { // String 2--
+    {NOTE_NONE,   480},
     {NOTE_SIb_2,  202},
     {NOTE_NONE,   1660},
     {NOTE_SIb_3,  8},
@@ -1336,6 +1345,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_8[] = { // String 2--
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_9[] = { // Trombones-
+    {NOTE_NONE,   1446},
     {NOTE_MIb_3,  20},
     {NOTE_NONE,   16},
     {NOTE_SIb_2,  27},
@@ -1432,6 +1442,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_9[] = { // Trombones-
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_10[] = { // Harp
+    {NOTE_NONE,   2523},
     {NOTE_SIb_4,  11},
     {NOTE_NONE,   12},
     {NOTE_MIb_5,  11},
@@ -1678,10 +1689,12 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_10[] = { // Harp
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_11[] = { // Strings---
+    {NOTE_NONE,   499},
     {NOTE_SIb_6,  1265},
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_12[] = { // Piano
+    {NOTE_NONE,   5882},
     {NOTE_MIb_5,  25},
     {NOTE_NONE,   10},
     {NOTE_SIb_4,  25},
@@ -1780,6 +1793,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_12[] = { // Piano
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_13[] = { // String 2---
+    {NOTE_NONE,   480},
     {NOTE_SIb_1,  230},
     {NOTE_NONE,   1632},
     {NOTE_SIb_1,  8},
@@ -1838,6 +1852,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_13[] = { // String 2---
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_14[] = { // Horns--
+    {NOTE_NONE,   5161},
     {NOTE_RE_4,   93},
     {NOTE_NONE,   2422},
     {NOTE_DO_4,   106},
@@ -1845,13 +1860,13 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_14[] = { // Horns--
     {NOTE_SIb_3,  64},
     {NOTE_NONE,   349},
     {NOTE_FA_4,   228},
-    {NOTE_NONE,   357},
-    {NOTE_REb_4,  16},
-    {NOTE_NONE,   -130},
+    {NOTE_NONE,   243},
     {NOTE_LAb_4,  17},
     {NOTE_NONE,   13},
     {NOTE_MIb_4,  73},
-    {NOTE_NONE,   47},
+    {NOTE_NONE,   11},
+    {NOTE_REb_4,  16},
+    {NOTE_NONE,   20},
     {NOTE_DO_4,   66},
     {NOTE_NONE,   24},
     {NOTE_REb_4,  18},
@@ -1860,6 +1875,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_14[] = { // Horns--
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_15[] = { // Bassoon-
+    {NOTE_NONE,   480},
     {NOTE_SIb_4,  175},
     {NOTE_NONE,   663},
     {NOTE_MIb_4,  13},
@@ -1886,6 +1902,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_15[] = { // Bassoon-
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_16[] = { // String 2----
+    {NOTE_NONE,   2881},
     {NOTE_SIb_2,  18},
     {NOTE_NONE,   22},
     {NOTE_SIb_2,  18},
@@ -1910,6 +1927,7 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_16[] = { // String 2----
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_17[] = { // Bassoon
+    {NOTE_NONE,   480},
     {NOTE_SIb_5,  173},
     {NOTE_NONE,   664},
     {NOTE_LAb_4,  12},
@@ -1941,12 +1959,14 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_17[] = { // Bassoon
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_18[] = { // Horns---
+    {NOTE_NONE,   7676},
     {NOTE_LA_3,   100},
     {NOTE_NONE,   610},
     {NOTE_FA_3,   238},
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_19[] = { // Trumpets-
+    {NOTE_NONE,   1831},
     {NOTE_LA_3,   36},
     {NOTE_NONE,   38},
     {NOTE_FA_4,   11},
@@ -1969,12 +1989,14 @@ static const note_t SONGNOTES_Star_Wars_Medley_TRACK_19[] = { // Trumpets-
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_20[] = { // Strings--
+    {NOTE_NONE,   485},
     {NOTE_FA_3,   130},
     {NOTE_NONE,   5553},
     {NOTE_RE_6,   51},
 };
 
 static const note_t SONGNOTES_Star_Wars_Medley_TRACK_21[] = { // Trumpets--
+    {NOTE_NONE,   1837},
     {NOTE_FA_4,   8},
 };
 

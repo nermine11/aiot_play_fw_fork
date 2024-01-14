@@ -191,14 +191,29 @@ void music_play(songtitle_t songtitle, uint8_t trackIdx) {
                     music_vars.numnotes   = sizeof(  SONGNOTES_harry_potter_TRACK_7)/sizeof(note_t);
                     break;
                 case 8:
+                default:
                     music_vars.notes      = (note_t*)SONGNOTES_harry_potter_TRACK_8;
                     music_vars.numnotes   = sizeof(  SONGNOTES_harry_potter_TRACK_8)/sizeof(note_t);
                     break;
             }
             music_vars.speed              = SONGSPEED[SONGTITLE_HARRY_POTTER];
             break;
+      case SONGTITLE_SYNCTEST:
+            trackIdx = trackIdx%2; // roll over if more motes
+            switch (trackIdx) {
+                case 0:
+                    music_vars.notes      = (note_t*)SONGNOTES_synctest_TRACK_0;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_synctest_TRACK_0)/sizeof(note_t);
+                    break;
+                case 1:
+                    music_vars.notes      = (note_t*)SONGNOTES_synctest_TRACK_1;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_synctest_TRACK_1)/sizeof(note_t);
+                    break;
+            }
+            music_vars.speed              = SONGSPEED[SONGTITLE_SYNCTEST];
+            break;
+            break;
     }
-    
 
     // play first note
     _start_song(music_vars.speed);

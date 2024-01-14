@@ -148,7 +148,11 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
                 app_vars.step         = STEP_1_WAITING_ASN3;
                 NRF_RTC0->CC[0]       = ASN1_POLLING_PERIOD;
                 trackIdx              = app_vars.moteId-2; // the first mote has moteId 2, yet we want trackIdx 0 for it
-                music_play(SONGTITLE_HARRY_POTTER,trackIdx);
+                if ((app_vars.asn[3]&0x40)==0) {
+                    music_play(SONGTITLE_STAR_WARS,trackIdx);
+                } else {
+                    music_play(SONGTITLE_HARRY_POTTER,trackIdx);
+                }
                 break;
         }
 

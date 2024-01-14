@@ -49,6 +49,7 @@ class MidiParser(object):
         self.miding          = self._midi2miding(self.midi)
         #self.miding          = self._remove_overlaps(self.miding)
         self.miding          = self._cut_in_track(self.miding)
+        self.miding          = self._order_tracks(self.miding)
         self.miding          = self._sort_tracks(self.miding)
         self._save_miding_midi(self.miding)
         self._save_miding_h(self.miding)
@@ -203,6 +204,12 @@ class MidiParser(object):
             t += 1
         return(miding)
     
+    def _order_tracks(self,miding):
+        t = 0
+        for t in range(len(miding)):
+            miding[t]['notes'] = sorted(miding[t]['notes'],key=lambda e: e['startts'])
+        return(miding)
+    
     def _sort_tracks(self,miding):
         
         ontime = []
@@ -277,19 +284,28 @@ class MidiParser(object):
         print(f'\nCreated {self.filename}.h')
     
     def __format_track(self,trackidx,track):
-        output = []
-        output += [f'static const note_t SONGNOTES_{self.filename}_TRACK_{trackidx}[] = {{ // {track['name']}']
-        lastendts = None
+        output       = []
+        output      += [f'static const note_t SONGNOTES_{self.filename}_TRACK_{trackidx}[] = {{ // {track['name']}']
+        laststartts  = None
+        lastendts    = 0
         for note in track['notes']:
-            if lastendts!=None:
-                dur = note['startts']-lastendts
-                if dur:
-                    output += ['    {{{:<12} {}}},'.format('NOTE_NONE,',                  dur)]
-            output         += ['    {{{:<12} {}}},'.format(NOTE_val2str[note['note']]+',',note['endts']-note['startts'])]
-            lastendts = note['endts']
-        output += ['};']
-        output += ['']
-        output  = '\n'.join(output)
+            if laststartts!=None and lastendts!=None:
+                try:
+                    assert(laststartts<lastendts)
+                    assert(            lastendts<=note['startts'])
+                    assert(                       note['startts']<note['endts'])
+                except AssertionError:
+                    print(laststartts,lastendts,note['startts'],note['endts'])
+                    raise
+            dur = note['startts']-lastendts
+            if dur:
+                output      += ['    {{{:<12} {}}},'.format('NOTE_NONE,',                  dur                          )]
+            output          += ['    {{{:<12} {}}},'.format(NOTE_val2str[note['note']]+',',note['endts']-note['startts'])]
+            laststartts      = note['startts']
+            lastendts        = note['endts']
+        output    += ['};']
+        output    += ['']
+        output     = '\n'.join(output)
         return output
     
     def _convert_midi_txt(self,filename):
