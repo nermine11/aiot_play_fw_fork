@@ -2,14 +2,19 @@
 #include <stdbool.h>
 #include "board.h"
 #include "music.h"
+#include "periodictimer.h"
 
 //=========================== defines =========================================
+
+#define PLAY_PERIOD_S 60
 
 //=========================== typedef =========================================
 
 //=========================== variables =======================================
 
 //=========================== prototypes ======================================
+
+void _periodtimer_cb(void);
 
 //=========================== main ============================================
 
@@ -20,7 +25,13 @@ int main(void) {
 
     // music
     music_init();
-    music_play(SONGTITLE_STAR_WARS);
+
+    // initialize the periodic timer
+    music_play(SONGTITLE_HARRY_POTTER);
+    periodictimer_init(
+        PLAY_PERIOD_S,       // period_s
+        _periodtimer_cb      // periodtimer_cb
+    );
     
     // main loop
     while(1) {
@@ -31,3 +42,7 @@ int main(void) {
 }
 
 //=========================== private =========================================
+
+void _periodtimer_cb(void) {
+     music_play(SONGTITLE_STAR_WARS);
+}

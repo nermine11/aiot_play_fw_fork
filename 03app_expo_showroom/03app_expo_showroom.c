@@ -138,7 +138,7 @@ void RTC0_IRQHandler(void) {
                     app_dbg.num_STEP_2_WAITING_ASN4_ROLLOVER++;
                     app_vars.step         = STEP_1_WAITING_ASN3;
                     NRF_RTC0->CC[0]       = ASN1_POLLING_PERIOD;
-                    music_play(SONGTITLE_STAR_WARS);
+                    music_play(SONGTITLE_HARRY_POTTER);
                     break;
             }
 
