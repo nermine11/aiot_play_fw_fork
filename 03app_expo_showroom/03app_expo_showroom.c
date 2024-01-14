@@ -23,7 +23,6 @@ typedef struct {
     step_t         step;
     uint16_t       moteId;
     uint8_t        asn[5];
-    uint32_t       deviceAddr;
 } app_vars_t;
 
 app_vars_t app_vars;
@@ -52,8 +51,7 @@ int main(void) {
     // initialize variables
     memset(&app_vars,0x00,sizeof(app_vars));
     memset(&app_dbg, 0x00,sizeof(app_dbg));
-
-    app_vars.deviceAddr = NRF_FICR->DEVICEADDR[0];
+    
     // bsp
     board_init();
 
@@ -115,6 +113,7 @@ void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply) {
 void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
     uint32_t num_asns_to_wait;
     uint32_t num_ticks_to_wait;
+    uint8_t  trackIdx;
 
     // debug
     app_dbg.numcalls_ntw_getTime_cb++;
@@ -148,7 +147,8 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
                 app_dbg.num_STEP_2_WAITING_ASN4_ROLLOVER++;
                 app_vars.step         = STEP_1_WAITING_ASN3;
                 NRF_RTC0->CC[0]       = ASN1_POLLING_PERIOD;
-                music_play(SONGTITLE_HARRY_POTTER);
+                trackIdx              = app_vars.moteId-2; // the first mote has moteId 2, yet we want trackIdx 0 for it
+                music_play(SONGTITLE_HARRY_POTTER,trackIdx);
                 break;
         }
 
