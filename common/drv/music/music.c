@@ -129,7 +129,7 @@ void music_play(songtitle_t songtitle) {
                     music_vars.numnotes   = sizeof(SONGNOTES_harry_potter_TRACK_6)/sizeof(note_t);
                     break;
             }
-            music_vars.speed      = SONGSPEED[SONGTITLE_STAR_WARS];
+            music_vars.speed      = SONGSPEED[SONGTITLE_HARRY_POTTER];
             break;
     }
     
@@ -156,11 +156,8 @@ static void _play_cur_note(void) {
 
 static void _end_song(void) {
     NRF_RTC2->TASKS_STOP     = 0x00000001;
-    pwm_setperiod(NOTE_NONE);
+    pwm_stop();
     music_dbg.song_playing   = false;
-
-    // poipoipoi
-    NVIC_SystemReset();
 }
 
 //=========================== interrupt handlers ==============================

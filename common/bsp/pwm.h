@@ -13,5 +13,6 @@
 
 void pwm_init(void);
 void pwm_setperiod(uint16_t period);
+void pwm_stop(void);
 
 #endif
