@@ -42,29 +42,7 @@ static const uint16_t SONGSPEED[] = {
 };
 
 #include "Star_Wars_Medley.h"
-
-static const note_t SONGNOTES_HARRY_POTTER[] = {
-    {NOTE_DO_3,  8},
-};
-
-static const note_t SONGNOTES_DEFAULT[] = {
-    {NOTE_DO_3,  8},
-    {NOTE_RE_3,  8},
-    {NOTE_MI_3,  8},
-    {NOTE_FA_3,  8},
-    {NOTE_SOL_3, 8},
-    {NOTE_LA_3,  8},
-    {NOTE_SI_3,  8},
-    {NOTE_NONE,  16},
-    {NOTE_DO_3,  4},
-    {NOTE_RE_3,  1},
-    {NOTE_MI_3,  16},
-    {NOTE_FA_3,  6},
-    {NOTE_SOL_3, 8},
-    {NOTE_LA_3,  8},
-    {NOTE_SI_3,  8},
-    {NOTE_DO_4,  8},
-};
+#include "harry_potter.h"
 
 //=========================== typedef =========================================
 
