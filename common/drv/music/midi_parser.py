@@ -116,7 +116,10 @@ class MidiParser(object):
                     # note starts
                     assert(msg.note not in activenotes)
                     activenotes += [{'note':msg.note,'startts':ts,'endts':None}]
-                if msg.type=='note_on' and msg.velocity==0:
+                if  (
+                        (msg.type=='note_on' and msg.velocity==0) or
+                         msg.type=='note_off'
+                    ):
                     # note ends
                     found = False
                     for i in range(len(activenotes)):
@@ -312,6 +315,10 @@ def main():
     MidiParser(
         filename    = 'Star_Wars_Medley',
         maxts       = 48.0,
+    )
+    MidiParser(
+        filename    = 'harry_potter',
+        maxts       = 28.0,
     )
 
 if __name__=='__main__':
