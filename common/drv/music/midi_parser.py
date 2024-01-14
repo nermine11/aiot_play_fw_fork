@@ -1,4 +1,10 @@
 import mido
+import pprint
+import copy
+
+pp = pprint.PrettyPrinter(indent=4,depth=2)
+
+#============================ defines =========================================
 
 NOTE_val2str = {}
 for i in range(21,127+1):
@@ -20,144 +26,292 @@ for i in range(21,127+1):
     # name
     NOTE_val2str[i] = f'NOTE_{notename}_{octave}'
 
+#============================ classes =========================================
+
 class MidiParser(object):
     
-    MAXNUMNOTES     = 1000
-    PRIORITY_TRACKS = [
-        'Bassoon',
-        'Flute',
-        'Horns',
-        'Trumpets',
-        'Trombones',
-        'Harp',
-        'Piano',
-        'Strings',
-        'String 2',
-        'String 3',
-    ]
-    
-    def __init__(self,filename,songname,maxduration,numtracks=10):
+    TICKS_PER_BEAT           = 120
+    TEMPO                    = 500000
+        
+    def __init__(self,filename,maxts=None):
+        
+        # store params
+        self.filename        = filename
+        self.maxts           = maxts
         
         # initialize
-        self.filename        = filename
-        self.songname        = songname
-        self.maxduration     = maxduration
-        self.numtracks       = numtracks
-        self.mid             = mido.MidiFile(self.filename)
+        self.midi            = mido.MidiFile(f'{self.filename}.mid')
         
-        # print summary
-        print(self._format_summary())
-        
-        # extract
-        self.extract    = {}
-        for trackname in self.PRIORITY_TRACKS:
-            self.extract[trackname] = self._extract_track(trackname)
-        
-        # write
-        self._write_extract(self.songname,self.extract)
+        # handle
+        self._print_summary(self.midi)
+        self.tempomap        = self._get_tempomap(self.midi)
+        self.tempomapIdx     = 0
+        self.miding          = self._midi2miding(self.midi)
+        #self.miding          = self._remove_overlaps(self.miding)
+        self.miding          = self._cut_in_track(self.miding)
+        self.miding          = self._sort_tracks(self.miding)
+        self._save_miding_midi(self.miding)
+        self._save_miding_h(self.miding)
+        self._convert_midi_txt(f'{self.filename}')
+        self._convert_midi_txt(f'{self.filename}_simplified')
     
     #======================== public ==========================================
     
     #======================== private =========================================
     
-    def _format_summary(self):
-        output  = []
-        output += ['']
-        output += ['Extracting {} tracks from "{}"'.format(self.numtracks,self.filename)]
-        output += ['']
-        output += ['Initial file contains {} tracks:'.format(len(self.mid.tracks))]
-        for (i,track) in enumerate(self.mid.tracks):
-            output += ['   {:>2}. {}'.format(i,track.name)]
-        output += ['']
-        output  = '\n'.join(output)
-        return output
+    def _print_summary(self,midi):
+        output               = []
+        output              += ['']
+        output              += [f'Extracting tracks from "{self.filename}.mid"']
+        output              += ['']
+        output              += ['Initial file contains {} tracks:'.format(len(midi.tracks))]
+        for (i,track) in enumerate(midi.tracks):
+            output          += ['   {:>2}. {}'.format(i,track.name)]
+        output              += ['']
+        output               = '\n'.join(output)
+        print(output)
     
-    def _extract_track(self,trackname):
-        
-        print(f'extracting track "{trackname}"...',end='')
-        
-        input_track = self._find_track(trackname)
-        
-        returnVal   = []
-        cur_note    = None
-        ts          = 0
-        start_ts    = 0
-        for msg in input_track:
-            
-            ts += msg.time
-            
-            if msg.type=='note_on' and msg.velocity>0 and cur_note==None:
-                # note starts
-                
-                # log how long there has been a silence
-                duration = ts-start_ts
-                if duration>1:
-                    returnVal  += [(None,duration)]
-                
-                # remember the current note and when it started
-                cur_note = msg.note
-                start_ts = ts
-            
-            if msg.type=='note_on' and msg.velocity==0 and msg.note==cur_note:
-                # note ends
-                
-                # log how long the last note has played
-                duration = ts-start_ts
-                if duration>1:
-                    returnVal  += [(NOTE_val2str[cur_note],duration)]
-                
-                # remember this is a silence and when it started
-                cur_note = None
-                start_ts = ts
-            
-            if ts>self.maxduration:
-                break
-        
-        print(f'   done ({len(returnVal)} notes)')
-        return returnVal
+    def _get_tempomap(self,midi):
+        tempomap                  = []
+        tempotrack                = None
+        for track in midi.tracks:
+            for i in range(1,len(track)):
+                msg               = track[i] # shorthand
+                if msg.type=='set_tempo':
+                    if tempotrack==None:
+                        tempotrack = track.name
+                    assert(tempotrack==track.name)
+                    tempomap     += [{'time':msg.time,'tempo':msg.tempo}]
+        return tempomap
     
-    def _find_track(self,trackname):
-        for track in self.mid.tracks:
-            if track.name==trackname:
-                return track
-        raise ValueError()
+    def _midi2miding(self,midi):
+        '''
+        miding = [
+            {
+                'name': 'Bassoon',
+                'notes': {
+                    {'note':123,'startts':123,'endts':123},
+                    {'note':123,'startts':123,'endts':123},
+                    {'note':123,'startts':123,'endts':123},
+                    ...
+                }
+            }
+        ]
+        '''
+        miding          = []
+        for track in midi.tracks:
+            self.runningtime = 0
+            self.runningts   = 0
+            self.tempomapIdx = 0
+            if track.name in ['Drums','Timpani']:
+                continue
+            notes            = []
+            activenotes      = []
+            for i in range(1,len(track)):
+                msg          = track[i] # shorthand
+                ts           = self.__get_ts(msg.time)
+                if self.runningts>self.maxts:
+                    break
+                if msg.type=='note_on' and msg.velocity>0:
+                    # note starts
+                    assert(msg.note not in activenotes)
+                    activenotes += [{'note':msg.note,'startts':ts,'endts':None}]
+                if msg.type=='note_on' and msg.velocity==0:
+                    # note ends
+                    found = False
+                    for i in range(len(activenotes)):
+                        if activenotes[i]['note']==msg.note:
+                            found = True
+                            activenotes[i]['endts']=ts
+                            notes += [activenotes[i]]
+                            activenotes.pop(i)
+                            break
+                    assert(found==True)
+            if len(notes):
+                miding += [{
+                    'name':      track.name,
+                    'notes':     notes,
+                }]
+        return miding
     
-    def _write_extract(self,songname,extract):
-        output   = []
-        output  += [f'#ifndef __{songname}_H']
-        output  += [f'#define __{songname}_H']
-        output  += ['']
-        trackidx = 0
-        for (trackname,tracknotes) in extract.items():
-            output += [self._format_track(songname,trackname,trackidx,tracknotes)]
-            trackidx += 1
-            output  += ['']
-        output  += ['#endif']
-        output  += ['']
-        output  = '\n'.join(output)
-        filename = f'song_{songname}.h'
+    def __get_ts(self,time):
+        
+        # shift on tempomap
+        self.runningtime += time
+        if self.runningtime>=self.tempomap[self.tempomapIdx]['time']:
+            if self.tempomapIdx<len(self.tempomap)-1:
+                self.tempomapIdx += 1
+        
+        # compute ts
+        tsdiff          = self._time2ts(time)
+        self.runningts += tsdiff
+        
+        return self.runningtime
+    
+    def _remove_overlaps(self,miding):
+        ctr = 0
+        for track in miding:
+            for i in range(len(track['notes'])):
+                startts = track['notes'][i]['startts']
+                for j in range(len(track['notes'])):
+                    if i==j:
+                        continue
+                    endts = track['notes'][j]['endts']
+                    if 0<endts-startts and endts-startts<self._ts2time(0.050):
+                        ctr += 1
+                        track['notes'][j]['endts']=track['notes'][i]['startts']
+        print(f'removed {ctr} overlaps')
+        return miding
+    
+    def _cut_in_track(self,miding):
+        t = 0
+        while t<len(miding):
+            movenotes = []
+            while True:
+                i           = 0
+                while i<len(miding[t]['notes']):
+                    j       = 0
+                    moveidx = None
+                    while j<len(miding[t]['notes']):
+                        if i!=j:
+                            if (
+                                miding[t]['notes'][i]['startts']<=miding[t]['notes'][j]['startts'] and 
+                                miding[t]['notes'][j]['startts']<miding[t]['notes'][i]['endts']
+                               ):
+                                moveidx = j
+                        if moveidx!=None:
+                            break
+                        j += 1
+                    i += 1
+                    if moveidx!=None:
+                        break
+                if moveidx==None:
+                    break
+                else:
+                    movenotes += [miding[t]['notes'].pop(moveidx)]
+            if movenotes:
+                miding += [
+                    {
+                        'name':  miding[t]['name']+'-',
+                        'notes': movenotes,
+                    }
+                ]
+            print('{:<20} removed {} notes'.format(miding[t]['name'],len(movenotes)))
+            t += 1
+        return(miding)
+    
+    def _sort_tracks(self,miding):
+        
+        ontime = []
+        for track in miding:
+            thisontime = 0
+            for note in track['notes']:
+                thisontime += note['endts']-note['startts']
+            ontime += [{'name':track['name'],'ontime':thisontime}]
+        ontime = sorted(ontime,key=lambda e: e['ontime'],reverse=True)
+        
+        midingout = []
+        for trackname in [e['name'] for e in ontime]:
+            for t in miding:
+                if t['name']==trackname:
+                    midingout += [copy.deepcopy(t)]
+        assert(len(midingout)==len(miding))
+        
+        return midingout
+        
+    def _save_miding_midi(self,miding):
+        # one tick is 500000/120=4167us which is 239 Hz
+        # on nRF52833, when using RTC, if clock at 32 kHz, 133 RTC ticks per MIDI tick
+        # so use a PRESCALER=132 -> RCT clock will be running at 32kHz/(132+1)=246 Hz
+        midiout              = mido.MidiFile(ticks_per_beat=self.TICKS_PER_BEAT)
+        
+        # meta track
+        trackout             = mido.MidiTrack()
+        trackout            += [mido.MetaMessage('time_signature',numerator=4, denominator=4, clocks_per_click=24, notated_32nd_notes_per_beat=8)]
+        trackout            += [mido.MetaMessage('track_name',name='meta')]
+        trackout            += [mido.MetaMessage('key_signature',key='C')]
+        trackout            += [mido.MetaMessage('set_tempo',tempo=self.TEMPO)]
+        trackout            += [mido.MetaMessage('end_of_track')]
+        midiout.tracks      += [trackout]
+        
+        # instrument tracks
+        for (channel,track) in enumerate(miding):
+            trackout         = mido.MidiTrack()
+            # meta
+            trackout        += [mido.MetaMessage('track_name',name=track['name'])]
+            trackout        += [mido.Message('program_change',channel=channel%16,program=81)]
+            # gather msgs
+            msgs             = []
+            for n in track['notes']:
+                msgs        += [{'note':n['note'],'velocity':64, 'ts':n['startts']}] # start
+                msgs        += [{'note':n['note'],'velocity':0  ,'ts':n['endts']}]   # end
+            # sort
+            msgs             = sorted(msgs,key=lambda e: e['ts'])
+            # write
+            ts               = 0
+            for msg in msgs:
+                t            = msg['ts']-ts
+                trackout    += [mido.Message('note_on',channel=channel%16,note=msg['note'],velocity=msg['velocity'],time=t)]
+                ts           = msg['ts']
+            # finalize
+            trackout        += [mido.MetaMessage('end_of_track')]
+            midiout.tracks  += [trackout]
+        midiout.save(f'{self.filename}_simplified.mid')
+    
+    def _save_miding_h(self,miding):
+        output     = []
+        output    += [f'#ifndef __{self.filename}_H']
+        output    += [f'#define __{self.filename}_H']
+        output    += ['']
+        for (trackidx,track) in enumerate(miding):
+            output += [self.__format_track(trackidx,track)]
+        output    += ['#endif']
+        output    += ['']
+        output     = '\n'.join(output)
+        filename   = f'{self.filename}.h'
         with open(filename,'w') as f:
             f.write(output)
-        print(f'\nWritten to {filename}')
+        print(f'\nCreated {self.filename}.h')
     
-    def _format_track(self,songname,trackname,trackidx,tracknotes):
+    def __format_track(self,trackidx,track):
         output = []
-        output += [f'static const note_t SONGNOTES_{songname}_TRACK_{trackidx}[] = {{ // {trackname}']
-        for (note,dur) in tracknotes[:self.MAXNUMNOTES]:
-            if note is None:
-                note = 'NOTE_NONE'
-            output += ['    {{{:<12} {}}},'.format(note+',',dur)]
+        output += [f'static const note_t SONGNOTES_{self.filename}_TRACK_{trackidx}[] = {{ // {track['name']}']
+        lastendts = None
+        for note in track['notes']:
+            if lastendts!=None:
+                dur = note['startts']-lastendts
+                if dur:
+                    output += ['    {{{:<12} {}}},'.format('NOTE_NONE,',                  dur)]
+            output         += ['    {{{:<12} {}}},'.format(NOTE_val2str[note['note']]+',',note['endts']-note['startts'])]
+            lastendts = note['endts']
         output += ['};']
+        output += ['']
         output  = '\n'.join(output)
         return output
     
+    def _convert_midi_txt(self,filename):
+        midi  = mido.MidiFile(f'{filename}.mid')
+        with open(f'{filename}.txt','w') as f:
+            f.write(str(midi))
+    
+    #======================== helpers =========================================
+    
+    def _ts2time(self,ts):
+        # tempo: us per beat
+        # ticks_per_beat in header
+        # ts   = time*(tempo/ticks_per_beat)
+        # time = ts/(tempo/ticks_per_beat)
+        return int(ts/(self.tempomap[0]['tempo']/1000000/self.TICKS_PER_BEAT))
+    
+    def _time2ts(self,time):
+        return time*(self.tempomap[0]['tempo']/1000000/self.TICKS_PER_BEAT)
+
 #============================ main ============================================
 
 def main():
     MidiParser(
-        filename    = 'Star_Wars_Medley.mid',
-        songname    = 'STAR_WARS',
-        maxduration = 6600,
+        filename    = 'Star_Wars_Medley',
+        maxts       = 48.0,
     )
 
 if __name__=='__main__':
