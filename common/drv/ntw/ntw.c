@@ -53,6 +53,8 @@ typedef struct {
     uint32_t            num_calls_api_openSocket_reply;
     uint32_t            num_calls_api_bindSocket;
     uint32_t            num_calls_api_bindSocket_reply;
+    uint32_t            num_calls_api_setJoinDutyCycle;
+    uint32_t            num_calls_api_setJoinDutyCycle_reply;
     uint32_t            num_calls_api_join;
     uint32_t            num_calls_api_join_reply;
     uint32_t            num_calls_api_getTime;
@@ -84,6 +86,8 @@ void     api_openSocket(void);
 void     api_openSocket_reply(void);
 void     api_bindSocket(void);
 void     api_bindSocket_reply(void);
+void     api_setJoinDutyCycle(void);
+void     api_setJoinDutyCycle_reply(void);
 void     api_join(void);
 void     api_join_reply(void);
 bool     api_getTime(void);
@@ -341,6 +345,38 @@ void api_bindSocket_reply(void) {
    
    // debug
    ntw_dbg.num_calls_api_bindSocket_reply++;
+
+   // cancel timeout
+   fsm_cancelEvent();
+   
+   // choose next step
+   fsm_scheduleEvent(CMD_PERIOD, api_setJoinDutyCycle);
+}
+
+// setJoinDutyCycle
+
+void api_setJoinDutyCycle(void) {
+   
+   // debug
+   ntw_dbg.num_calls_api_setJoinDutyCycle++;
+
+   // arm callback
+   fsm_setCallback(api_setJoinDutyCycle_reply);
+   
+   // issue function
+   dn_ipmt_setParameter_joinDutyCycle(
+      0xff,                                                          // dutyCycle
+      (dn_ipmt_setParameter_joinDutyCycle_rpt*)(ntw_vars.replyBuf)   // reply
+   );
+
+   // schedule timeout event
+   fsm_scheduleEvent(SERIAL_RESPONSE_TIMEOUT, api_response_timeout);
+}
+
+void api_setJoinDutyCycle_reply(void) {
+   
+   // debug
+   ntw_dbg.num_calls_api_setJoinDutyCycle_reply++;
 
    // cancel timeout
    fsm_cancelEvent();
