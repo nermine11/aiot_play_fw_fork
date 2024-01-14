@@ -1216,6 +1216,7 @@
         </folder>
       </folder>
       <folder Name="music">
+        <file file_name="../common/drv/music/harry_potter.h" />
         <file file_name="../common/drv/music/music.c" />
         <file file_name="../common/drv/music/music.h" />
         <file file_name="../common/drv/music/notes.h" />

@@ -54,82 +54,148 @@ void music_init(void) {
     NVIC_EnableIRQ(RTC2_IRQn);
 }
 
-void music_play(songtitle_t songtitle) {
-    uint32_t deviceAddr;
+void music_play(songtitle_t songtitle, uint8_t trackIdx) {
 
     // debug
     music_dbg.num_music_play++;
 
-    deviceAddr = NRF_FICR->DEVICEADDR[0];
-
     switch (songtitle) {
         case SONGTITLE_STAR_WARS:
-            switch (deviceAddr) {
-                case 0x44c36145:
+            trackIdx = trackIdx%22; // roll over if more motes
+            switch (trackIdx) {
+                case 0:
                     music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_0;
-                    music_vars.numnotes   = sizeof(SONGNOTES_Star_Wars_Medley_TRACK_0)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_0)/sizeof(note_t);
                     break;
-                case 0xe91644b9:
+                case 1:
                     music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_1;
-                    music_vars.numnotes   = sizeof(SONGNOTES_Star_Wars_Medley_TRACK_1)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_1)/sizeof(note_t);
                     break;
-                case 0xba0a3a2a:
+                case 2:
                     music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_2;
-                    music_vars.numnotes   = sizeof(SONGNOTES_Star_Wars_Medley_TRACK_2)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_2)/sizeof(note_t);
                     break;
-                case 0xd953d128:
+                case 3:
                     music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_3;
-                    music_vars.numnotes   = sizeof(SONGNOTES_Star_Wars_Medley_TRACK_3)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_3)/sizeof(note_t);
                     break;
-                case 0x4212f3ae:
+                case 4:
                     music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_4;
-                    music_vars.numnotes   = sizeof(SONGNOTES_Star_Wars_Medley_TRACK_4)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_4)/sizeof(note_t);
                     break;
-                case 0x546c3af1:
+                case 5:
                     music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_5;
-                    music_vars.numnotes   = sizeof(SONGNOTES_Star_Wars_Medley_TRACK_5)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_5)/sizeof(note_t);
                     break;
-                case 0xfb1c7899:
-                default:
+                case 6:
                     music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_6;
-                    music_vars.numnotes   = sizeof(SONGNOTES_Star_Wars_Medley_TRACK_6)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_6)/sizeof(note_t);
+                    break;
+                case 7:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_7;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_7)/sizeof(note_t);
+                    break;
+                case 8:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_8;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_8)/sizeof(note_t);
+                    break;
+                case 9:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_9;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_9)/sizeof(note_t);
+                    break;
+                case 10:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_10;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_10)/sizeof(note_t);
+                    break;
+                case 11:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_11;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_11)/sizeof(note_t);
+                    break;
+                case 12:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_12;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_12)/sizeof(note_t);
+                    break;
+                case 13:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_13;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_13)/sizeof(note_t);
+                    break;
+                case 14:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_14;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_14)/sizeof(note_t);
+                    break;
+                case 15:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_15;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_15)/sizeof(note_t);
+                    break;
+                case 16:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_16;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_16)/sizeof(note_t);
+                    break;
+                case 17:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_17;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_17)/sizeof(note_t);
+                    break;
+                case 18:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_18;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_18)/sizeof(note_t);
+                    break;
+                case 19:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_19;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_19)/sizeof(note_t);
+                    break;
+                case 20:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_20;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_20)/sizeof(note_t);
+                    break;
+                case 21:
+                default:
+                    music_vars.notes      = (note_t*)SONGNOTES_Star_Wars_Medley_TRACK_21;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_Star_Wars_Medley_TRACK_21)/sizeof(note_t);
                     break;
             }
-            music_vars.speed      = SONGSPEED[SONGTITLE_STAR_WARS];
+            music_vars.speed              = SONGSPEED[SONGTITLE_STAR_WARS];
             break;
         case SONGTITLE_HARRY_POTTER:
-            switch (deviceAddr) {
-                case 0x44c36145:
+            trackIdx = trackIdx%9; // roll over if more motes
+            switch (trackIdx) {
+                case 0:
                     music_vars.notes      = (note_t*)SONGNOTES_harry_potter_TRACK_0;
-                    music_vars.numnotes   = sizeof(SONGNOTES_harry_potter_TRACK_0)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_harry_potter_TRACK_0)/sizeof(note_t);
                     break;
-                case 0xe91644b9:
+                case 1:
                     music_vars.notes      = (note_t*)SONGNOTES_harry_potter_TRACK_1;
-                    music_vars.numnotes   = sizeof(SONGNOTES_harry_potter_TRACK_1)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_harry_potter_TRACK_1)/sizeof(note_t);
                     break;
-                case 0xba0a3a2a:
+                case 2:
                     music_vars.notes      = (note_t*)SONGNOTES_harry_potter_TRACK_2;
-                    music_vars.numnotes   = sizeof(SONGNOTES_harry_potter_TRACK_2)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_harry_potter_TRACK_2)/sizeof(note_t);
                     break;
-                case 0xd953d128:
+                case 3:
                     music_vars.notes      = (note_t*)SONGNOTES_harry_potter_TRACK_3;
-                    music_vars.numnotes   = sizeof(SONGNOTES_harry_potter_TRACK_3)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_harry_potter_TRACK_3)/sizeof(note_t);
                     break;
-                case 0x4212f3ae:
+                case 4:
                     music_vars.notes      = (note_t*)SONGNOTES_harry_potter_TRACK_4;
-                    music_vars.numnotes   = sizeof(SONGNOTES_harry_potter_TRACK_4)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_harry_potter_TRACK_4)/sizeof(note_t);
                     break;
-                case 0x546c3af1:
+                case 5:
                     music_vars.notes      = (note_t*)SONGNOTES_harry_potter_TRACK_5;
-                    music_vars.numnotes   = sizeof(SONGNOTES_harry_potter_TRACK_5)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_harry_potter_TRACK_5)/sizeof(note_t);
                     break;
-                case 0xfb1c7899:
-                default:
+                case 6:
                     music_vars.notes      = (note_t*)SONGNOTES_harry_potter_TRACK_6;
-                    music_vars.numnotes   = sizeof(SONGNOTES_harry_potter_TRACK_6)/sizeof(note_t);
+                    music_vars.numnotes   = sizeof(  SONGNOTES_harry_potter_TRACK_6)/sizeof(note_t);
+                    break;
+                case 7:
+                    music_vars.notes      = (note_t*)SONGNOTES_harry_potter_TRACK_7;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_harry_potter_TRACK_7)/sizeof(note_t);
+                    break;
+                case 8:
+                    music_vars.notes      = (note_t*)SONGNOTES_harry_potter_TRACK_8;
+                    music_vars.numnotes   = sizeof(  SONGNOTES_harry_potter_TRACK_8)/sizeof(note_t);
                     break;
             }
-            music_vars.speed      = SONGSPEED[SONGTITLE_HARRY_POTTER];
+            music_vars.speed              = SONGSPEED[SONGTITLE_HARRY_POTTER];
             break;
     }
     
