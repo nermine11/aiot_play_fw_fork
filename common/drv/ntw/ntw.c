@@ -31,6 +31,8 @@ typedef void (*fsm_reply_callback)(void);
 
 typedef struct {
     // interface
+    ntw_getMoteId_cbt   ntw_getMoteId_cb;
+    ntw_getTime_cbt     ntw_getTime_cb;
     ntw_receive_cbt     ntw_receive_cb;
     // ipmt
     bool                isOper;                            // true iff is operational
@@ -52,8 +54,14 @@ typedef struct {
     uint32_t            num_calls_api_openSocket_reply;
     uint32_t            num_calls_api_bindSocket;
     uint32_t            num_calls_api_bindSocket_reply;
+    uint32_t            num_calls_api_setJoinDutyCycle;
+    uint32_t            num_calls_api_setJoinDutyCycle_reply;
     uint32_t            num_calls_api_join;
     uint32_t            num_calls_api_join_reply;
+    uint32_t            num_calls_api_getMoteId;
+    uint32_t            num_calls_api_getMoteId_reply;
+    uint32_t            num_calls_api_getTime;
+    uint32_t            num_calls_api_getTime_reply;
     uint32_t            num_calls_api_sendTo;
     uint32_t            num_calls_api_sendTo_reply;
     uint32_t            num_notif_EVENTS;
@@ -74,6 +82,7 @@ void     fsm_setCallback(fsm_reply_callback cb);
 void     dn_ipmt_notif_cb(uint8_t cmdId, uint8_t subCmdId);
 void     dn_ipmt_reply_cb(uint8_t cmdId);
 // api
+// (run automatically by this module)
 void     api_response_timeout(void);
 void     api_getMoteStatus(void);
 void     api_getMoteStatus_reply(void);
@@ -81,8 +90,15 @@ void     api_openSocket(void);
 void     api_openSocket_reply(void);
 void     api_bindSocket(void);
 void     api_bindSocket_reply(void);
+void     api_setJoinDutyCycle(void);
+void     api_setJoinDutyCycle_reply(void);
 void     api_join(void);
 void     api_join_reply(void);
+// (called by upper stack)
+bool     api_getMoteId(void);
+void     api_getMoteId_reply(void);
+bool     api_getTime(void);
+void     api_getTime_reply(void);
 bool     api_sendTo(uint8_t* buf, uint8_t bufLen);
 void     api_sendTo_reply(void);
 // bsp
@@ -91,7 +107,7 @@ void     hfclock_start(void);
 
 //=========================== public ==========================================
 
-void ntw_init(ntw_receive_cbt ntw_receive_cb) {
+void ntw_init(ntw_getMoteId_cbt ntw_getMoteId_cb, ntw_getTime_cbt ntw_getTime_cb, ntw_receive_cbt ntw_receive_cb) {
 
     // reset variables
     memset(&ntw_vars,0x00,sizeof(ntw_vars_t));
@@ -99,7 +115,9 @@ void ntw_init(ntw_receive_cbt ntw_receive_cb) {
     memset(&ntw_dbg, 0x00,sizeof(ntw_dbg_t));
 
     // store params
-    ntw_vars.ntw_receive_cb = ntw_receive_cb;
+    ntw_vars.ntw_getMoteId_cb     = ntw_getMoteId_cb;
+    ntw_vars.ntw_getTime_cb       = ntw_getTime_cb;
+    ntw_vars.ntw_receive_cb       = ntw_receive_cb;
 
     // initialize the ipmt module
     dn_ipmt_init(
@@ -111,6 +129,14 @@ void ntw_init(ntw_receive_cbt ntw_receive_cb) {
 
     // schedule the first event
     fsm_scheduleEvent(CMD_PERIOD, &api_getMoteStatus);
+}
+
+bool ntw_getMoteId(void) {
+    return api_getMoteId();
+}
+
+bool ntw_getTime(void) {
+    return api_getTime();
 }
 
 bool ntw_transmit(uint8_t* buf, uint8_t bufLen) {
@@ -336,6 +362,38 @@ void api_bindSocket_reply(void) {
    fsm_cancelEvent();
    
    // choose next step
+   fsm_scheduleEvent(CMD_PERIOD, api_setJoinDutyCycle);
+}
+
+// setJoinDutyCycle
+
+void api_setJoinDutyCycle(void) {
+   
+   // debug
+   ntw_dbg.num_calls_api_setJoinDutyCycle++;
+
+   // arm callback
+   fsm_setCallback(api_setJoinDutyCycle_reply);
+   
+   // issue function
+   dn_ipmt_setParameter_joinDutyCycle(
+      0xff,                                                          // dutyCycle
+      (dn_ipmt_setParameter_joinDutyCycle_rpt*)(ntw_vars.replyBuf)   // reply
+   );
+
+   // schedule timeout event
+   fsm_scheduleEvent(SERIAL_RESPONSE_TIMEOUT, api_response_timeout);
+}
+
+void api_setJoinDutyCycle_reply(void) {
+   
+   // debug
+   ntw_dbg.num_calls_api_setJoinDutyCycle_reply++;
+
+   // cancel timeout
+   fsm_cancelEvent();
+   
+   // choose next step
    fsm_scheduleEvent(CMD_PERIOD, api_join);
 }
 
@@ -369,6 +427,106 @@ void api_join_reply(void) {
    // choose next step
    // no next step at this point. FSM will advance when we received a "joined"
    // notification
+}
+
+// getMoteId
+
+bool api_getMoteId(void) {
+    bool     returnVal;
+   
+    if (ntw_vars.isOper==true) {
+        // mote is operational
+
+        // debug
+        ntw_dbg.num_calls_api_getMoteId++;
+
+        // arm callback
+        fsm_setCallback(api_getMoteId_reply);
+   
+        // issue function
+        dn_ipmt_getParameter_moteId(
+           (dn_ipmt_getParameter_moteId_rpt*)(ntw_vars.replyBuf)
+        );
+
+        // schedule timeout event
+        fsm_scheduleEvent(SERIAL_RESPONSE_TIMEOUT, api_response_timeout);
+
+        // success
+        returnVal = true;
+    } else {
+        // mote is NOT operational
+
+        // cannot proceed
+        returnVal = false;
+    }
+
+    return returnVal;
+}
+
+void api_getMoteId_reply(void) {
+   dn_ipmt_getParameter_moteId_rpt* reply;
+   
+   // debug
+   ntw_dbg.num_calls_api_getMoteId_reply++;
+
+   // cancel timeout
+   fsm_cancelEvent();
+   
+   // parse reply
+   reply = (dn_ipmt_getParameter_moteId_rpt*)ntw_vars.replyBuf;
+   
+   // handle
+   ntw_vars.ntw_getMoteId_cb(reply);
+}
+
+// getTime
+
+bool api_getTime(void) {
+    bool     returnVal;
+   
+    if (ntw_vars.isOper==true) {
+        // mote is operational
+
+        // debug
+        ntw_dbg.num_calls_api_getTime++;
+
+        // arm callback
+        fsm_setCallback(api_getTime_reply);
+   
+        // issue function
+        dn_ipmt_getParameter_time(
+           (dn_ipmt_getParameter_time_rpt*)(ntw_vars.replyBuf)
+        );
+
+        // schedule timeout event
+        fsm_scheduleEvent(SERIAL_RESPONSE_TIMEOUT, api_response_timeout);
+
+        // success
+        returnVal = true;
+    } else {
+        // mote is NOT operational
+
+        // cannot proceed
+        returnVal = false;
+    }
+
+    return returnVal;
+}
+
+void api_getTime_reply(void) {
+   dn_ipmt_getParameter_time_rpt* reply;
+   
+   // debug
+   ntw_dbg.num_calls_api_getTime_reply++;
+
+   // cancel timeout
+   fsm_cancelEvent();
+   
+   // parse reply
+   reply = (dn_ipmt_getParameter_time_rpt*)ntw_vars.replyBuf;
+   
+   // handle
+   ntw_vars.ntw_getTime_cb(reply);
 }
 
 // sendTo
