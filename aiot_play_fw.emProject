@@ -1221,6 +1221,7 @@
         <file file_name="../common/drv/music/music.h" />
         <file file_name="../common/drv/music/notes.h" />
         <file file_name="../common/drv/music/song_STAR_WARS.h" />
+        <file file_name="../common/drv/music/song_synctest.h" />
       </folder>
       <folder Name="pir">
         <file file_name="../common/drv/pir/pir.c" />

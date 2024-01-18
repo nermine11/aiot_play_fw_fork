@@ -24,14 +24,16 @@ typedef struct {
 typedef enum {
     SONGTITLE_STAR_WARS,
     SONGTITLE_HARRY_POTTER,
-    SONGTITLE_DEFAULT
+    SONGTITLE_SYNCTEST
 } songtitle_t;
 
 static const uint16_t SONGSPEED[] = {
-    120, // SONGTITLE_STAR_WARS
-    150, // SONGTITLE_HARRY_POTTER
+    150, // SONGTITLE_STAR_WARS
+    220, // SONGTITLE_HARRY_POTTER
+    220, // SONGTITLE_SYNCTEST
 };
 
+#include "song_synctest.h"
 #include "Star_Wars_Medley.h"
 #include "harry_potter.h"
 

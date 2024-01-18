@@ -2,6 +2,7 @@
 #define __harry_potter_H
 
 static const note_t SONGNOTES_harry_potter_TRACK_0[] = { // Piano #1
+    {NOTE_NONE,   48},
     {NOTE_MI_5,   128},
     {NOTE_NONE,   16},
     {NOTE_MI_5,   128},
@@ -211,6 +212,7 @@ static const note_t SONGNOTES_harry_potter_TRACK_1[] = { // Celesta
 };
 
 static const note_t SONGNOTES_harry_potter_TRACK_2[] = { // Violin
+    {NOTE_NONE,   2352},
     {NOTE_MI_4,   24},
     {NOTE_MI_4,   24},
     {NOTE_MI_4,   24},
@@ -274,6 +276,7 @@ static const note_t SONGNOTES_harry_potter_TRACK_2[] = { // Violin
 };
 
 static const note_t SONGNOTES_harry_potter_TRACK_3[] = { // Piano #1-
+    {NOTE_NONE,   1470},
     {NOTE_SOL_5,  98},
     {NOTE_NONE,   46},
     {NOTE_FA_5,   98},
@@ -292,6 +295,7 @@ static const note_t SONGNOTES_harry_potter_TRACK_3[] = { // Piano #1-
 };
 
 static const note_t SONGNOTES_harry_potter_TRACK_4[] = { // Piano #1--
+    {NOTE_NONE,   1476},
     {NOTE_SIb_5,  92},
     {NOTE_NONE,   52},
     {NOTE_LAb_5,  92},
@@ -310,6 +314,7 @@ static const note_t SONGNOTES_harry_potter_TRACK_4[] = { // Piano #1--
 };
 
 static const note_t SONGNOTES_harry_potter_TRACK_5[] = { // Violin-
+    {NOTE_NONE,   2364},
     {NOTE_SOL_4,  24},
     {NOTE_SOL_4,  24},
     {NOTE_SOL_4,  24},
@@ -347,6 +352,7 @@ static const note_t SONGNOTES_harry_potter_TRACK_5[] = { // Violin-
 };
 
 static const note_t SONGNOTES_harry_potter_TRACK_6[] = { // Piano #1---
+    {NOTE_NONE,   1480},
     {NOTE_RE_6,   88},
     {NOTE_NONE,   56},
     {NOTE_DO_6,   88},
@@ -361,6 +367,7 @@ static const note_t SONGNOTES_harry_potter_TRACK_6[] = { // Piano #1---
 };
 
 static const note_t SONGNOTES_harry_potter_TRACK_7[] = { // Piano #1----
+    {NOTE_NONE,   1484},
     {NOTE_SOL_6,  84},
     {NOTE_NONE,   60},
     {NOTE_FA_6,   84},
@@ -375,6 +382,7 @@ static const note_t SONGNOTES_harry_potter_TRACK_7[] = { // Piano #1----
 };
 
 static const note_t SONGNOTES_harry_potter_TRACK_8[] = { // Cello
+    {NOTE_NONE,   4656},
     {NOTE_MI_4,   128},
 };
 
