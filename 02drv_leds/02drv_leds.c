@@ -6,11 +6,23 @@
 
 //=========================== defines =========================================
 
-#define BLINK_PERIOD_S 2
+#define BLINK_PERIOD_S 1
 
 //=========================== typedef =========================================
 
 //=========================== variables =======================================
+
+typedef struct {
+    uint8_t        counter;
+} app_vars_t;
+
+app_vars_t app_vars;
+
+typedef struct {
+    uint32_t       numcalls_periodtimer_cb;
+} app_dbg_t;
+
+app_dbg_t app_dbg;
 
 //=========================== prototypes ======================================
 
@@ -20,6 +32,10 @@ void _periodtimer_cb(void);
 
 int main(void) {
     
+    // clear module variables
+    memset(&app_vars,0x00,sizeof(app_vars_t));
+    memset(&app_dbg, 0x00,sizeof(app_dbg_t));
+
     // bsp
     board_init();
 
@@ -43,7 +59,29 @@ int main(void) {
 //=========================== private =========================================
 
 void _periodtimer_cb(void) {
-    leds_0_on();
-    leds_1_on();
-    leds_2_on();
+    
+    // increment
+    app_vars.counter++;
+
+    // set LEDs
+    if (app_vars.counter&0x01) {
+        leds_red_on();
+    } else {
+        leds_red_off();
+    }
+    if (app_vars.counter&0x02) {
+        leds_blue_on();
+    } else {
+        leds_blue_off();
+    }
+    if (app_vars.counter&0x04) {
+        leds_green_on();
+    } else {
+        leds_green_off();
+    }
+    if (app_vars.counter&0x08) {
+        leds_white_on();
+    } else {
+        leds_white_off();
+    }
 }
