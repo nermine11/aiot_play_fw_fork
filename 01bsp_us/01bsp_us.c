@@ -5,13 +5,15 @@
 
 //=========================== defines =========================================
 
+#define MEASURING_PERIOD_S 5
+
 //=========================== typedef =========================================
 
 //=========================== variables =======================================
 
 typedef struct {
-    int16_t  us_val;
-    uint8_t  us_num_reads;
+    int16_t us_val;
+    uint8_t us_num_reads;
 } app_vars_t;
 
 app_vars_t app_vars;
@@ -35,7 +37,7 @@ int main(void) {
 
     // initialize the periodic timer
     periodictimer_init(
-        1,                   // period_s
+        MEASURING_PERIOD_S,  // period_s
         _periodtimer_cb      // periodtimer_cb
     );
 
