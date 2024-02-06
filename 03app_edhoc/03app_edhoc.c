@@ -111,7 +111,11 @@ int main(void) {
       return 1;
     }
 
-    res = initiator_prepare_message_3(&initiator_processed_m2, ByReference, NULL, &initiator_done, &message_3, prk_out);
+    if(!res) {
+      res = initiator_prepare_message_3(&initiator_processed_m2, ByReference, NULL, &initiator_done, &message_3, prk_out);
+    } else {
+      return 1;
+    }
 
     if (!res) {
       _send_edhoc_message(&message_3, false, 10);
