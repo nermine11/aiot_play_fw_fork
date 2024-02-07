@@ -42,7 +42,7 @@ extern void mbedtls_memory_buffer_alloc_init(uint8_t *buf, size_t len);
 
 void _periodtimer_cb(void);
 void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen);
-EdhocMessageBuffer* _send_edhoc_message(EdhocMessageBuffer *message, bool message_1, int timeout_s);
+EdhocMessageBuffer* _send_edhoc_message(EdhocMessageBuffer *message, bool message_1, int timeout_s, uint8_t c_r);
 
 //=========================== main ============================================
 
@@ -97,7 +97,7 @@ int main(void) {
         return 1;
     }
    
-    message_2 = _send_edhoc_message(&message_1, true, 10);
+    message_2 = _send_edhoc_message(&message_1, true, 10, 0xf5);
     if (message_2) {
         res = initiator_parse_message_2(&initiator_wait_m2, message_2, cred_r, &initiator_processing_m2, &c_r, &fetched_cred_r, &dummy_ead);
     } else {
@@ -119,7 +119,7 @@ int main(void) {
     }
 
     if (!res) {
-      _send_edhoc_message(&message_3, false, 10);
+      _send_edhoc_message(&message_3, false, 10, c_r);
     } else {
       return 1;
     }
@@ -134,20 +134,16 @@ int main(void) {
 
 //=========================== private =========================================
 
-EdhocMessageBuffer* _send_edhoc_message(EdhocMessageBuffer *message, bool message_1, int timeout_s) {
+EdhocMessageBuffer* _send_edhoc_message(EdhocMessageBuffer *message, bool message_1, int timeout_s, uint8_t c_r) {
    int counter = 0;
    bool ntw_success = false;
    bool timeout_occured = false;
    uint8_t payload[MAX_MESSAGE_SIZE_LEN] = {0};
 
+   payload[0] = c_r;
+   memcpy(&payload[1], message->content, message->len);
    while (!ntw_success) {
-      if (message_1) {
-        payload[0] = 0xf5;
-        memcpy(&payload[1], message->content, message->len);
         ntw_success = ntw_transmit(payload, message->len + 1);
-      } else {
-        ntw_success = ntw_transmit(message->content, message->len);
-      }
     }
 
    if (message_1) {
