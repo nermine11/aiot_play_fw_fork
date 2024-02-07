@@ -53,6 +53,7 @@ int main(void) {
     CredentialRPK cred_i = {0};
     CredentialRPK cred_r = {0};
     CredentialRPK fetched_cred_r = {0};
+    EADItemC dummy_ead = {0};
 
     int res = 0;
     EdhocInitiatorC initiator;
@@ -98,7 +99,7 @@ int main(void) {
    
     message_2 = _send_edhoc_message(&message_1, true, 10);
     if (message_2) {
-        res = initiator_parse_message_2(&initiator_wait_m2, message_2, cred_r, &initiator_processing_m2, &c_r, &fetched_cred_r, NULL);
+        res = initiator_parse_message_2(&initiator_wait_m2, message_2, cred_r, &initiator_processing_m2, &c_r, &fetched_cred_r, &dummy_ead);
     } else {
         // Error while sending
         return 1;
