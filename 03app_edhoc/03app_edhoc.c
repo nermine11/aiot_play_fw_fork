@@ -60,10 +60,10 @@ int main(void) {
     EdhocMessageBuffer *message_2;
     EdhocMessageBuffer message_3;
     uint8_t c_r;
-    EdhocInitiatorWaitM2C initiator_wait_m2;
-    EdhocInitiatorProcessingM2C initiator_processing_m2;
-    EdhocInitiatorProcessedM2C initiator_processed_m2;
-    EdhocInitiatorDoneC initiator_done;
+    EdhocInitiatorWaitM2C initiator_wait_m2 = {0};
+    EdhocInitiatorProcessingM2C initiator_processing_m2 = {0};
+    EdhocInitiatorProcessedM2C initiator_processed_m2 = {0};
+    EdhocInitiatorDoneC initiator_done = {0};
 
     uint8_t prk_out[SHA256_DIGEST_LEN];
 
