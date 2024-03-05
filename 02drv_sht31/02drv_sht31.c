@@ -7,6 +7,7 @@ sources:
     https://github.com/bbcmicrobit/micropython/blob/master/source/microbit/microbiti2c.cpp
     https://microbit-micropython.readthedocs.io/en/latest/i2c.html#
     https://makecode.microbit.org/device/pins
+    https://github.com/DotBots/DotBot-firmware/blob/main/bsp/nrf/i2c.c
 
 I2C:
     config:
@@ -17,11 +18,8 @@ I2C:
         SDA==micro: (header)==P0.02 (nRF)
 */
 
-#define MOTOR_SPEED 20 // [0...100]
-uint8_t I2CBUF_MOTOR_LEFT_FWD[]   = {0x01,0x02,MOTOR_SPEED,0};
 
 #define SHT31_ADDR 0X44 
-
 
 void i2c_init(void) {
    //  3           2            1           0
@@ -67,7 +65,7 @@ void i2c_init(void) {
     NRF_TWI0->FREQUENCY           = 0x01980000;
 }
 
-void i2c_begin(void) {
+void i2c_end(void) {
     // Disable TWI
     //  3           2            1           0
     // 1098 7654 3210 9876 5432 1098 7654 3210
@@ -77,7 +75,7 @@ void i2c_begin(void) {
     NRF_TWI0->ENABLE              = 0x00000000;
 }
 
-void i2c_end(void) {
+void i2c_begin(void) {
     // Enable TWI
     //  3           2            1           0
     // 1098 7654 3210 9876 5432 1098 7654 3210
@@ -88,58 +86,66 @@ void i2c_end(void) {
 }
 
 
-
 void i2c_send(uint8_t addr, uint8_t reg, uint8_t* buf, uint8_t buflen) {
-
+    // Set device address
     NRF_TWI0->ADDRESS             = addr;
-    uint8_t i;
 
-    i=0;
-    NRF_TWI0->TXD                 = buf[i];
+    // Choose register to write to
+    NRF_TWI0->TXD                 = reg;
     NRF_TWI0->EVENTS_TXDSENT      = 0;
     NRF_TWI0->TASKS_STARTTX       = 1;
-    i++;
-    while(i<buflen) {
+
+    for (uint8_t i = 0; i < buflen; i++) {
         while(NRF_TWI0->EVENTS_TXDSENT==0);
         NRF_TWI0->EVENTS_TXDSENT  = 0;
         NRF_TWI0->TXD             = buf[i];
-        i++;
     }
+
     while(NRF_TWI0->EVENTS_TXDSENT==0);
     NRF_TWI0->TASKS_STOP     = 1;
 }
 
-void db_i2c_read_regs(uint8_t addr, uint8_t reg, void *data, size_t len) {
-    DB_TWIM->ADDRESS       = addr;
-    DB_TWIM->TXD.MAXCNT    = 1;
-    DB_TWIM->TXD.PTR       = (uint32_t)&reg;
-    DB_TWIM->RXD.PTR       = (uint32_t)data;
-    DB_TWIM->RXD.MAXCNT    = (uint8_t)len;
-    DB_TWIM->SHORTS        = (1 << TWIM_SHORTS_LASTTX_STARTRX_Pos) | (1 << TWIM_SHORTS_LASTRX_STOP_Pos);
-    DB_TWIM->TASKS_STARTTX = 1;
-    _wait_for_transfer();
+void i2c_read(uint8_t addr, uint8_t reg, uint8_t* buf, uint8_t buflen) {
+    // Set device address
+    NRF_TWI0->ADDRESS = addr;
+    
+    // Choose register to read from
+    NRF_TWI0->TXD                 = reg;
+    NRF_TWI0->EVENTS_TXDSENT      = 0;
+    NRF_TWI0->TASKS_STARTTX       = 1;
+
+    while (NRF_TWI0->EVENTS_TXDSENT == 0);
+    NRF_TWI0->EVENTS_TXDSENT      = 0;
+    
+    // Begin receive mode
+    NRF_TWI0->TASKS_STARTRX = 1;
+    for (uint8_t i = 0; i < buflen; i++) {
+        while (NRF_TWI0->EVENTS_RXDREADY == 0);
+        NRF_TWI0->EVENTS_RXDREADY = 0;
+        buf[i]                    = NRF_TWI0->RXD;
+    }
+    
+    NRF_TWI0->EVENTS_STOPPED = 0;
+    NRF_TWI0->TASKS_STOP = 1;
+    while (NRF_TWI0->EVENTS_STOPPED == 0);
 }
 
-void db_i2c_write_regs(uint8_t addr, uint8_t reg, const void *data, size_t len) {
-    assert(len + 1 <= DB_TWIM_TX_BUF_SIZE);
-    // concatenate register address and input data in a single TX buffer
-    _i2c_tx_vars.buffer[0] = reg;
-    memcpy(&_i2c_tx_vars.buffer[1], data, len);
-
-    // send the content to write to the register
-    DB_TWIM->ADDRESS       = addr;
-    DB_TWIM->TXD.PTR       = (uint32_t)_i2c_tx_vars.buffer;
-    DB_TWIM->TXD.MAXCNT    = (uint8_t)len + 1;
-    DB_TWIM->SHORTS        = (1 << TWIM_SHORTS_LASTTX_STOP_Pos);
-    DB_TWIM->TASKS_STARTTX = 1;
-    _wait_for_transfer();
-}
 
 int main(void) {
     
     i2c_init();
 
-    i2c_send(SHT31_ADDR, I2CBUF_MOTOR_LEFT_FWD, sizeof(I2CBUF_MOTOR_LEFT_FWD));
+    // Enable TWI
+    i2c_begin();
+
+    // Read Temperature & Humidity
+    
+    // I2CBUF_MOTOR_LEFT_FWD = {0x01,0x02,MOTOR_SPEED,0}
+    // i2c_send(SHT31_ADDR, 0x01, I2CBUF_MOTOR_LEFT_FWD, sizeof(I2CBUF_MOTOR_LEFT_FWD));
+    // READ SENSOR TEMPERATURE AND HUMIDITY
+
+    // Disable TWI
+    i2c_end();
 
 
     while(1);
