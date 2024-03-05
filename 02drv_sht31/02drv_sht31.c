@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include "nrf52833.h"
+#include "busywait.h"
 
 /*
 sources:
@@ -134,7 +136,7 @@ void SHT31_readTempHumidity(float* temp, float* humidity) {
 
     // Send command to measure temperature
     i2c_send(SHT31_ADDR, &CMD_MEASURE_TEMP, sizeof(CMD_MEASURE_TEMP));
-    __delay_cycles(50*64000);
+    busywait_approx_125ms();
 
     // Read temperature data
     i2c_read(SHT31_ADDR, data, sizeof(data));
@@ -143,7 +145,7 @@ void SHT31_readTempHumidity(float* temp, float* humidity) {
 
     // Send command to measure humidity
     i2c_send(SHT31_ADDR, &CMD_MEASURE_HUMIDITY, sizeof(CMD_MEASURE_HUMIDITY));
-    __delay_cycles(50*64000);
+    busywait_approx_125ms();
 
     // Read humidity data
     i2c_read(SHT31_ADDR, data, sizeof(data));
@@ -165,6 +167,6 @@ int main(void) {
 
         i2c_end();
 
-        __delay_cycles(1000*64000);
+        busywait_approx_1s();
     }
 }
