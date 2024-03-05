@@ -869,7 +869,7 @@
       <file file_name="../common/SEGGER_THUMB_Startup.s" />
     </folder>
   </project>
-  <project Name="02_sht31">
+  <project Name="03app_labomap">
     <configuration
       LIBRARY_IO_TYPE="RTT"
       Name="Common"
@@ -899,7 +899,7 @@
       link_linker_script_file="$(ProjectDir)/../common/nRF_Flash_Variant1.icf"
       linker_memory_map_file="$(ProjectDir)/../common/nRF52833_xxAA_MemoryMap.xml"
       macros="DeviceHeaderFile=$(PackagesDir)/../common/nRF/Device/Include/nrf.h;DeviceSystemFile=$(PackagesDir)/../common/nRF/Device/Source/system_nrf52.c;DeviceVectorsFile=$(PackagesDir)/../common/nRF/Source/nrf52833_Vectors.s;DeviceFamily=nRF;Target=nRF52833_xxAA"
-      project_directory="02drv_sht31"
+      project_directory="03app_labomap"
       project_type="Executable"
       target_reset_script="Reset();"
       target_trace_initialize_script="EnableTrace(&quot;$(TraceInterfaceType)&quot;)" />
@@ -923,7 +923,7 @@
         <file file_name="../common/bsp/busywait.c" />
         <file file_name="../common/bsp/busywait.h" />
       </folder>
-      <file file_name="02drv_sht31.c" />
+      <file file_name="03app_labomap.c" />
     </folder>
     <folder Name="System Files">
       <file file_name="../common/nRF/Source/nrf52833_Vectors.s">

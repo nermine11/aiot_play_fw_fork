@@ -4,11 +4,6 @@
 
 /*
 sources:
-    https://github.com/elecfreaks/circuitpython_cutebot/blob/main/cutebot.py
-    https://github.com/Krakenus/microbit-cutebot-micropython/blob/master/cutebot.py
-    https://github.com/bbcmicrobit/micropython/blob/master/source/microbit/microbiti2c.cpp
-    https://microbit-micropython.readthedocs.io/en/latest/i2c.html#
-    https://makecode.microbit.org/device/pins
     https://github.com/DotBots/DotBot-firmware/blob/main/bsp/nrf/i2c.c
     https://labprojectsbd.com/2023/03/21/how-to-interface-sht31-with-stm32/#Example_code
     https://sensirion.com/media/documents/213E6A3B/63A5A569/Datasheet_SHT3x_DIS.pdf
@@ -77,7 +72,7 @@ void i2c_end(void) {
     // Disable TWI
     //  3           2            1           0
     // 1098 7654 3210 9876 5432 1098 7654 3210
-    // .... .... .... .... .... .... .... AAAA A: ENABLE: 0=Enabled
+    // .... .... .... .... .... .... .... AAAA A: ENABLE: 0=Disabled
     // xxxx xxxx xxxx xxxx xxxx xxxx xxxx 0000 
     //    0    0    0    0    0    0    0    0 0x00000000
     NRF_TWI0->ENABLE              = 0x00000000;
