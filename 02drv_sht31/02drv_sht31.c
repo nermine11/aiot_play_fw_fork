@@ -8,6 +8,8 @@ sources:
     https://microbit-micropython.readthedocs.io/en/latest/i2c.html#
     https://makecode.microbit.org/device/pins
     https://github.com/DotBots/DotBot-firmware/blob/main/bsp/nrf/i2c.c
+    https://labprojectsbd.com/2023/03/21/how-to-interface-sht31-with-stm32/#Example_code
+    https://sensirion.com/media/documents/213E6A3B/63A5A569/Datasheet_SHT3x_DIS.pdf
 
 I2C:
     config:
@@ -18,8 +20,12 @@ I2C:
         SDA==micro: (header)==P0.02 (nRF)
 */
 
-
+// Default SHT31 address
 #define SHT31_ADDR 0X44 
+
+// Measurement Commands for Single Shot Data Acquisition Mode
+uint8_t CMD_MEASURE_TEMP[]      = {0x2C, 0x06};
+uint8_t CMD_MEASURE_HUMIDITY[]  = {0x2C, 0x10};
 
 void i2c_init(void) {
    //  3           2            1           0
@@ -86,38 +92,30 @@ void i2c_begin(void) {
 }
 
 
-void i2c_send(uint8_t addr, uint8_t reg, uint8_t* buf, uint8_t buflen) {
-    // Set device address
+void i2c_send(uint8_t addr, uint8_t* buf, uint8_t buflen) {
     NRF_TWI0->ADDRESS             = addr;
 
-    // Choose register to write to
-    NRF_TWI0->TXD                 = reg;
+    uint8_t i = 0;
+    NRF_TWI0->TXD                 = buf[i];
     NRF_TWI0->EVENTS_TXDSENT      = 0;
     NRF_TWI0->TASKS_STARTTX       = 1;
+    i++;
 
-    for (uint8_t i = 0; i < buflen; i++) {
+    while(i<buflen) {
         while(NRF_TWI0->EVENTS_TXDSENT==0);
         NRF_TWI0->EVENTS_TXDSENT  = 0;
         NRF_TWI0->TXD             = buf[i];
+        i++;
     }
 
     while(NRF_TWI0->EVENTS_TXDSENT==0);
     NRF_TWI0->TASKS_STOP     = 1;
 }
 
-void i2c_read(uint8_t addr, uint8_t reg, uint8_t* buf, uint8_t buflen) {
-    // Set device address
-    NRF_TWI0->ADDRESS = addr;
-    
-    // Choose register to read from
-    NRF_TWI0->TXD                 = reg;
-    NRF_TWI0->EVENTS_TXDSENT      = 0;
-    NRF_TWI0->TASKS_STARTTX       = 1;
 
-    while (NRF_TWI0->EVENTS_TXDSENT == 0);
-    NRF_TWI0->EVENTS_TXDSENT      = 0;
-    
-    // Begin receive mode
+void i2c_read(uint8_t addr, uint8_t* buf, uint8_t buflen) {
+    NRF_TWI0->ADDRESS = addr;
+
     NRF_TWI0->TASKS_STARTRX = 1;
     for (uint8_t i = 0; i < buflen; i++) {
         while (NRF_TWI0->EVENTS_RXDREADY == 0);
@@ -130,23 +128,43 @@ void i2c_read(uint8_t addr, uint8_t reg, uint8_t* buf, uint8_t buflen) {
     while (NRF_TWI0->EVENTS_STOPPED == 0);
 }
 
+void SHT31_readTempHumidity(float* temp, float* humidity) {
+    uint8_t data[2];
+    uint16_t temp_raw, humidity_raw;
+
+    // Send command to measure temperature
+    i2c_send(SHT31_ADDR, &CMD_MEASURE_TEMP, sizeof(CMD_MEASURE_TEMP));
+    // delay(50);
+
+    // Read temperature data
+    i2c_read(SHT31_ADDR, data, sizeof(data));
+    temp_raw = data[0] << 8 | data[1];
+    *temp = ((float)temp_raw * 175.0f / 65535.0f) - 45.0f;
+
+    // Send command to measure humidity
+    i2c_send(SHT31_ADDR, &CMD_MEASURE_HUMIDITY, sizeof(CMD_MEASURE_HUMIDITY));
+    // delay(50);
+
+    // Read humidity data
+    i2c_read(SHT31_ADDR, data, sizeof(data));
+    humidity_raw = data[0] << 8 | data[1];
+    *humidity = ((float)humidity_raw * 100.0f / 65535.0f);
+}
 
 int main(void) {
-    
+    float temperature, humidity;
     i2c_init();
 
-    // Enable TWI
-    i2c_begin();
+    while (1) {
+        i2c_begin();
 
-    // Read Temperature & Humidity
-    
-    // I2CBUF_MOTOR_LEFT_FWD = {0x01,0x02,MOTOR_SPEED,0}
-    // i2c_send(SHT31_ADDR, 0x01, I2CBUF_MOTOR_LEFT_FWD, sizeof(I2CBUF_MOTOR_LEFT_FWD));
-    // READ SENSOR TEMPERATURE AND HUMIDITY
+        SHT31_readTempHumidity(&temperature, &humidity);
 
-    // Disable TWI
-    i2c_end();
+        printf("Temperature: %.2f°C\n", temperature);
+        printf("Humidity: %.2f%%\n", humidity);
 
+        i2c_end();
 
-    while(1);
+        // delay(1000);
+    }
 }
