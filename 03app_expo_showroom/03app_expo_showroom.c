@@ -4,6 +4,7 @@
 #include "periodictimer.h"
 #include "ntw.h"
 #include "music.h"
+#include "leds.h"
 
 //=========================== defines =========================================
 
@@ -40,6 +41,7 @@ app_dbg_t app_dbg;
 
 //=========================== prototypes ======================================
 
+void _ntw_joining_cb(void);
 void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply);
 void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply);
 void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen);
@@ -57,6 +59,7 @@ int main(void) {
 
     // ntw
     ntw_init(
+        _ntw_joining_cb,     // ntw_joining_cb
         _ntw_getMoteId_cb,   // ntw_getMoteId_cb
         _ntw_getTime_cb,     // ntw_getTime_cb
         _ntw_receive_cb      // ntw_receive_cb
@@ -64,6 +67,9 @@ int main(void) {
 
     // music
     music_init();
+
+    // leds
+    leds_init();
 
     // RTC0
     // configure/start the RTC
@@ -84,6 +90,9 @@ int main(void) {
     NRF_RTC0->CC[0]                    = ASN1_POLLING_PERIOD;
     NRF_RTC0->TASKS_START              = 0x00000001;
 
+    // red led: no connection to mote yet
+    leds_red_on();
+
     // main loop
     while(1) {
 
@@ -94,10 +103,25 @@ int main(void) {
 
 //=========================== private =========================================
 
+void _ntw_joining_cb(void) {
+    
+    // red led: no connection to mote yet
+    leds_red_off();
+
+    // green led: joining
+    leds_green_on();
+}
+
 void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply) {
 
     // debug
     app_dbg.numcalls_ntw_getMoteId_cb++;
+
+    // red led: no connection to mote yet
+    leds_red_off();
+
+    // green led: we have joined when getting a moteId
+    leds_green_off();
 
     do {
         if (reply->RC!=DN_ERR_NONE) {
@@ -127,6 +151,9 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
             break;
         }
 
+        // green led: we have joined when getting valid getTime
+        leds_green_off();
+
         // copy over to local copy for easier debug
         memcpy(app_vars.asn,reply->asn,sizeof(app_vars.asn));
 
@@ -148,11 +175,7 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
                 app_vars.step         = STEP_1_WAITING_ASN3;
                 NRF_RTC0->CC[0]       = ASN1_POLLING_PERIOD;
                 trackIdx              = app_vars.moteId-2; // the first mote has moteId 2, yet we want trackIdx 0 for it
-                if ((app_vars.asn[3]&0x40)==0) {
-                    music_play(SONGTITLE_STAR_WARS,trackIdx);
-                } else {
-                    music_play(SONGTITLE_HARRY_POTTER,trackIdx);
-                }
+                music_play(SONGTITLE_STAR_WARS,trackIdx);
                 break;
         }
 
@@ -163,6 +186,13 @@ void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen) {
     
     // debug
     app_dbg.numcalls_ntw_receive_cb++;
+
+    // handle
+    if (buf[0]==0x00) {
+        music_inhibit(true);
+    } else {
+        music_inhibit(false);
+    }
 }
 
 //=========================== interrupt handlers ==============================

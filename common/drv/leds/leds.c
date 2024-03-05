@@ -37,19 +37,19 @@ void leds_green_off(void) {
 }
 
 void leds_blue_on(void) {
-    gpio_P011_output_low();
-}
-
-void leds_blue_off(void) {
-    gpio_P011_output_high();
-}
-
-void leds_red_on(void) {
     gpio_P005_output_low();
 }
 
-void leds_red_off(void) {
+void leds_blue_off(void) {
     gpio_P005_output_high();
+}
+
+void leds_red_on(void) {
+    gpio_P011_output_low();
+}
+
+void leds_red_off(void) {
+    gpio_P011_output_high();
 }
 
 //=========================== private =========================================
