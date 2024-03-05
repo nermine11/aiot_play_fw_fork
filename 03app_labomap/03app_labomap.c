@@ -21,8 +21,9 @@ I2C:
 #define SHT31_ADDR 0X44 
 
 // Measurement Commands for Single Shot Data Acquisition Mode
-uint8_t CMD_MEASURE_TEMP[]      = {0x2C, 0x06};
-uint8_t CMD_MEASURE_HUMIDITY[]  = {0x2C, 0x10};
+// 0x2C: Clock stretching enabled
+// 0x06: High repeatability (longer measurement duration)
+uint8_t CMD_MEASURE[]      = {0x2C, 0x06};
 
 void i2c_init(void) {
    //  3           2            1           0
@@ -130,7 +131,7 @@ void SHT31_readTempHumidity(float* temp, float* humidity) {
     uint16_t temp_raw, humidity_raw;
 
     // Send command to measure temperature
-    i2c_send(SHT31_ADDR, &CMD_MEASURE_TEMP, sizeof(CMD_MEASURE_TEMP));
+    i2c_send(SHT31_ADDR, &CMD_MEASURE, sizeof(CMD_MEASURE));
     busywait_approx_125ms();
 
     // Read temperature data
@@ -139,7 +140,7 @@ void SHT31_readTempHumidity(float* temp, float* humidity) {
     *temp = ((float)temp_raw * 175.0f / 65535.0f) - 45.0f;
 
     // Send command to measure humidity
-    i2c_send(SHT31_ADDR, &CMD_MEASURE_HUMIDITY, sizeof(CMD_MEASURE_HUMIDITY));
+    i2c_send(SHT31_ADDR, &CMD_MEASURE, sizeof(CMD_MEASURE));
     busywait_approx_125ms();
 
     // Read humidity data
