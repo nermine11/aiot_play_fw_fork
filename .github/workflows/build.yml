@@ -10,11 +10,11 @@ jobs:
       matrix:
         config: ["Debug", "Release"]
     steps:
-      - name: Checkout repo
+      - name: checkout repo
         uses: actions/checkout@v4
-      - name: Build projects
+      - name: build all projects
         run: BUILD_CONFIG=${{ matrix.config }} make docker
-      - name: Release
+      - name: release
         uses: ncipollo/release-action@v1
         if: >-
           github.event_name == 'push' &&
