@@ -44,7 +44,7 @@ int main(void) {
     board_init();
 
     // ntw
-    ntw_init(_ntw_receive_cb);
+    ntw_init(NULL, NULL, _ntw_receive_cb);
 
     // initialize the periodic timer
     periodictimer_init(
