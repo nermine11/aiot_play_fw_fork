@@ -11,10 +11,11 @@ P0.03 and P0.02, respectively, on the nRF52833.
 
 sources:
     https://github.com/DotBots/DotBot-firmware/blob/main/bsp/nrf/i2c.c
-    https://labprojectsbd.com/2023/03/21/how-to-interface-sht31-with-stm32/#Example_code
     https://sensirion.com/media/documents/213E6A3B/63A5A569/Datasheet_SHT3x_DIS.pdf
 
 I2C:
+    config:
+        7-bit addressing plus 0 as the write bit
     pins:
         freq: 100000
         SCL==micro: B13 (header)==P0.03 (nRF)
@@ -26,8 +27,8 @@ I2C:
 
 // Measurement Commands for Single Shot Data Acquisition Mode
 // 0x2C: Clock stretching enabled
-// 0x06: High repeatability (longer measurement duration)
-uint8_t CMD_MEASURE[]      = {0x2C, 0x06};
+// 0x0D: Medium repeatability (proportional to measurement duration)
+uint8_t CMD_MEASURE[]      = {0x2C, 0x0D};
 
 void i2c_init(void) {
    //  3           2            1           0
@@ -73,26 +74,6 @@ void i2c_init(void) {
     NRF_TWI0->FREQUENCY           = 0x01980000;
 }
 
-void i2c_end(void) {
-    // Disable TWI
-    //  3           2            1           0
-    // 1098 7654 3210 9876 5432 1098 7654 3210
-    // .... .... .... .... .... .... .... AAAA A: ENABLE: 0=Disabled
-    // xxxx xxxx xxxx xxxx xxxx xxxx xxxx 0000 
-    //    0    0    0    0    0    0    0    0 0x00000000
-    NRF_TWI0->ENABLE              = 0x00000000;
-}
-
-void i2c_begin(void) {
-    // Enable TWI
-    //  3           2            1           0
-    // 1098 7654 3210 9876 5432 1098 7654 3210
-    // .... .... .... .... .... .... .... AAAA A: ENABLE: 5=Enabled
-    // xxxx xxxx xxxx xxxx xxxx xxxx xxxx 0101 
-    //    0    0    0    0    0    0    0    5 0x00000005
-    NRF_TWI0->ENABLE              = 0x00000005;
-}
-
 void i2c_send(uint8_t addr, uint8_t* buf, uint8_t buflen) {
     uint8_t i = 0;
 
@@ -129,46 +110,35 @@ void i2c_read(uint8_t addr, uint8_t* buf, uint8_t buflen) {
     while (NRF_TWI0->EVENTS_STOPPED == 0);
 }
 
-void SHT31_readTempHumidity(float* temp, float* humidity) {
-    uint8_t     data[2];
-    uint16_t    temp_raw;
-    uint16_t    humidity_raw;
+void SHT31_readTempHumidity(uint16_t* temp_raw, uint16_t* humidity_raw) {
+    uint8_t data[6];
 
     // send command to measure temperature
     i2c_send(SHT31_ADDR, &CMD_MEASURE, sizeof(CMD_MEASURE));
-    busywait_approx_125ms();
 
     // read temperature data
     i2c_read(SHT31_ADDR, data, sizeof(data));
-    temp_raw = data[0] << 8 | data[1];
-    *temp = ((float)temp_raw * 175.0f / 65535.0f) - 45.0f;
+    *temp_raw = data[0] << 8 | data[1];
+    *humidity_raw = data[3] << 8 | data[4];
 
-    // send command to measure humidity
-    i2c_send(SHT31_ADDR, &CMD_MEASURE, sizeof(CMD_MEASURE));
-    busywait_approx_125ms();
-
-    // read humidity data
-    i2c_read(SHT31_ADDR, data, sizeof(data));
-    humidity_raw = data[0] << 8 | data[1];
-    *humidity = ((float)humidity_raw * 100.0f / 65535.0f);
+    // debugging
+    printf("Raw data: ");
+    for(int i = 0; i < 6; i++) {
+        printf("%02x-", data[i]);
+    }
+    printf("\n");
 }
 
 int main(void) {
-    float temperature;
-    float humidity;
+    uint16_t temperature;
+    uint16_t humidity;
 
     i2c_init();
 
     while (1) {
-        i2c_begin();
-
         SHT31_readTempHumidity(&temperature, &humidity);
-
-        printf("Temperature: %.2f°C\n", temperature);
-        printf("Humidity: %.2f%%\n", humidity);
-
-        i2c_end();
-
+        // printf("Temperature: %X\n", temperature);
+        // printf("Humidity: %X\n", humidity);
         busywait_approx_1s();
     }
 }
