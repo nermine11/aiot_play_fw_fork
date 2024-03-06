@@ -1,13 +1,6 @@
 name: CI 
 
-on:
-  push:
-    branches:
-      - main
-      - develop
-    tags: 'REL-*'
-
-  pull_request:
+on: [push, fork]
 
 jobs:
   build:
