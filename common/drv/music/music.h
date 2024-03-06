@@ -44,6 +44,7 @@ static const uint16_t SONGSPEED[] = {
 //=========================== prototypes ======================================
 
 void music_init(void);
+void music_inhibit(bool inhibit);
 void music_play(songtitle_t songtitle, uint8_t track);
 
 #endif

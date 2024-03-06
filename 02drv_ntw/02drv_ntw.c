@@ -19,10 +19,12 @@ typedef struct {
 app_vars_t app_vars;
 
 typedef struct {
-    uint32_t       numReceive;
-    uint32_t       numTransmit;
-    uint32_t       numTransmit_success;
-    uint32_t       numTransmit_fail;
+    uint32_t       numcalls_periodtimer_cb;
+    uint32_t       numcalls_periodtimer_cb_success;
+    uint32_t       numcalls_periodtimer_cb_fail;
+    uint32_t       numcalls_ntw_getMoteId_cb;
+    uint32_t       numcalls_ntw_getTime_cb;
+    uint32_t       numcalls_ntw_receive_cb;
 } app_dbg_t;
 
 app_dbg_t app_dbg;
@@ -30,6 +32,8 @@ app_dbg_t app_dbg;
 //=========================== prototypes ======================================
 
 void _periodtimer_cb(void);
+void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply);
+void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply);
 void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen);
 
 //=========================== main ============================================
@@ -44,7 +48,12 @@ int main(void) {
     board_init();
 
     // ntw
-    ntw_init(_ntw_receive_cb);
+    ntw_init(
+        NULL,                // ntw_joining_cb
+        _ntw_getMoteId_cb,   // ntw_getMoteId_cb
+        _ntw_getTime_cb,     // ntw_getTime_cb
+        _ntw_receive_cb      // ntw_receive_cb
+    );
 
     // initialize the periodic timer
     periodictimer_init(
@@ -66,6 +75,9 @@ void _periodtimer_cb(void) {
     uint8_t txBuf[4];
     bool    success;
 
+    // debug
+    app_dbg.numcalls_periodtimer_cb++;
+
     // increment
     app_vars.txCounter++;
 
@@ -79,16 +91,27 @@ void _periodtimer_cb(void) {
     success = ntw_transmit(txBuf,sizeof(txBuf));
 
     // debug
-    app_dbg.numTransmit++;
     if (success==true) {
-        app_dbg.numTransmit_success++;
+        app_dbg.numcalls_periodtimer_cb_success++;
     } else {
-        app_dbg.numTransmit_fail++;
+        app_dbg.numcalls_periodtimer_cb_fail++;
     }
+}
+
+void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply) {
+
+    // debug
+    app_dbg.numcalls_ntw_getMoteId_cb++;
+}
+
+void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
+
+    // debug
+    app_dbg.numcalls_ntw_getTime_cb++;
 }
 
 void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen) {
     
     // debug
-    app_dbg.numReceive++;
+    app_dbg.numcalls_ntw_receive_cb++;
 }
