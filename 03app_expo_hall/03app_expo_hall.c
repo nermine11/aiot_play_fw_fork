@@ -49,6 +49,7 @@ int main(void) {
 
     // ntw
     ntw_init(
+        NULL,
         _ntw_getMoteId_cb,   // ntw_getMoteId_cb
         _ntw_getTime_cb,     // ntw_getTime_cb
         _ntw_receive_cb      // ntw_receive_cb
