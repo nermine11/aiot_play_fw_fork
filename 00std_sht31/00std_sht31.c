@@ -96,17 +96,23 @@ void i2c_send(uint8_t addr, uint8_t* buf, uint8_t buflen) {
 
 
 void i2c_read(uint8_t addr, uint8_t* buf, uint8_t buflen) {
+    uint8_t i;
     NRF_TWI0->ADDRESS               = addr;
 
     NRF_TWI0->TASKS_STARTRX         = 1;
-    for (uint8_t i = 0; i < buflen; i++) {
+    for (i = 0; i < buflen-1; i++) {
         while (NRF_TWI0->EVENTS_RXDREADY == 0);
         NRF_TWI0->EVENTS_RXDREADY   = 0;
         buf[i]                      = NRF_TWI0->RXD;
     }
 
-    NRF_TWI0->EVENTS_STOPPED        = 0;
+    // trigger STOP task before extracting last byte
     NRF_TWI0->TASKS_STOP            = 1;
+    while (NRF_TWI0->EVENTS_RXDREADY == 0);
+    NRF_TWI0->EVENTS_RXDREADY       = 0;
+    buf[i]                          = NRF_TWI0->RXD;
+
+    NRF_TWI0->EVENTS_STOPPED        = 0;
     while (NRF_TWI0->EVENTS_STOPPED == 0);
 }
 
@@ -120,13 +126,6 @@ void SHT31_readTempHumidity(uint16_t* temp_raw, uint16_t* humidity_raw) {
     i2c_read(SHT31_ADDR, data, sizeof(data));
     *temp_raw = data[0] << 8 | data[1];
     *humidity_raw = data[3] << 8 | data[4];
-
-    // debugging
-    printf("Raw data: ");
-    for(int i = 0; i < 6; i++) {
-        printf("%02x-", data[i]);
-    }
-    printf("\n");
 }
 
 int main(void) {
@@ -137,8 +136,8 @@ int main(void) {
 
     while (1) {
         SHT31_readTempHumidity(&temperature, &humidity);
-        // printf("Temperature: %X\n", temperature);
-        // printf("Humidity: %X\n", humidity);
+        printf("Temperature: %X\n", temperature);
+        printf("Humidity: %X\n", humidity);
         busywait_approx_1s();
     }
 }
