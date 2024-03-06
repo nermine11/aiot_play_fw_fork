@@ -80,7 +80,7 @@ int main(void) {
     board_init();
 
     // initialize the network uC
-    ntw_init(NULL, NULL, _ntw_receive_cb);
+    ntw_init(NULL, NULL, NULL, _ntw_receive_cb);
 
     // initialize memory buffer for PSA crypto backend
     mbedtls_memory_buffer_alloc_init(buffer, 4096 * 2);
