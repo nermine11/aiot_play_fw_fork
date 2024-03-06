@@ -5,13 +5,16 @@
 
 //=========================== define ==========================================
 
+// default SHT31 address
+#define SHT31_I2C_ADDR       0X44 
+
 //=========================== typedef =========================================
 
 //=========================== variables =======================================
 
 //=========================== prototypes ======================================
 
-void SHT31_init(void);
-void SHT31_readTempHumidity(uint16_t* temp_raw, uint16_t* humidity_raw);
+void sht31_init(void);
+void sht31_readTempHumidity(uint16_t* temp_raw, uint16_t* humidity_raw);
 
 #endif

@@ -1,6 +1,5 @@
 #include <string.h>
-#include "leds.h"
-#include "gpio.h"
+#include "i2c.h"
 
 //=========================== variables =======================================
 
