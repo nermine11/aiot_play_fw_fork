@@ -11,6 +11,11 @@
 
 //=========================== typedef =========================================
 
+typedef struct __attribute__ ((__packed__)) {
+    uint16_t       temp_raw;
+    uint16_t       humidity_raw;
+} labomap_ht;
+
 //=========================== variables =======================================
 
 typedef struct {
@@ -30,10 +35,6 @@ app_dbg_t app_dbg;
 
 //=========================== prototypes ======================================
 
-void _ntw_joining_cb(void);
-void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply);
-void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply);
-void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen);
 void _periodtimer_cb(void);
 
 //=========================== main ============================================
@@ -75,8 +76,8 @@ int main(void) {
 //=========================== private =========================================
 
 void _periodtimer_cb(void) {
-    uint8_t txBuf[4];
-    bool    success;
+    labomap_ht labomap_h;
+    bool       success;
 
     // debug
     app_dbg.numcalls_periodtimer_cb++;
@@ -87,14 +88,12 @@ void _periodtimer_cb(void) {
         &app_vars.humidity_raw    // humidity_raw
     );
 
-    // fill txBuf
-    txBuf[0] = 0x00; // TODO
-    txBuf[1] = 0x01;
-    txBuf[2] = 0x02;
-    txBuf[3] = 0x03;
+    // fill
+    labomap_h.temp_raw       = app_vars.temp_raw;
+    labomap_h.humidity_raw   = app_vars.humidity_raw;
 
-    // send txBuf
-    success = ntw_transmit(txBuf,sizeof(txBuf));
+    // send
+    success = ntw_transmit((uint8_t*)&labomap_h,sizeof(labomap_ht));
 
     // debug
     if (success==true) {
