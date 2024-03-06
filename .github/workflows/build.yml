@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - main
       - develop
     tags: 'REL-*'
 
@@ -11,25 +11,16 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ["Debug", "Release"]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Build projects
-        run: make
-      - name: Build projects for release
-        if: >-
-          github.event_name == 'push' &&
-          startsWith(github.event.ref, 'refs/tags')
-        run: BUILD_CONFIG=Release make
-      - name: Convert 02drv_triangle elf to hex
-        if: >-
-          github.event_name == 'push' &&
-          startsWith(github.event.ref, 'refs/tags')
-        run: >-
-          objcopy -O ihex
-          02drv_triangle/Output/Debug/Exe/02drv_triangle.elf
-          02drv_triangle/Output/Debug/Exe/02drv_triangle.hex
+        run: BUILD_CONFIG=${{ matrix.config }} make docker
       - name: Release
         uses: ncipollo/release-action@v1
         if: >-
@@ -37,7 +28,4 @@ jobs:
           startsWith(github.event.ref, 'refs/tags')
         with:
           generateReleaseNotes: true
-          artifacts: "
-            02drv_triangle/Output/Debug/Exe/02drv_triangle.elf
-            02drv_triangle/Output/Debug/Exe/02drv_triangle.hex"
           token: ${{ secrets.RELEASE_TOKEN }}
