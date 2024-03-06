@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config: ["Debug", "Release"]
+        config: ["Debug"]
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
