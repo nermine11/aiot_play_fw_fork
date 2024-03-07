@@ -12,14 +12,14 @@
 //=========================== typedef =========================================
 
 typedef struct __attribute__ ((__packed__)) {
-    uint16_t       temp_raw;
+    uint16_t       temperature_raw;
     uint16_t       humidity_raw;
 } labomap_ht;
 
 //=========================== variables =======================================
 
 typedef struct {
-    uint16_t       temp_raw;
+    uint16_t       temperature_raw;
     uint16_t       humidity_raw;
 } app_vars_t;
 
@@ -92,13 +92,13 @@ void _periodtimer_cb(void) {
 
     // read
     sht31_readTempHumidity(
-        &app_vars.temp_raw,       // temp_raw
+        &app_vars.temperature_raw,// temperature_raw
         &app_vars.humidity_raw    // humidity_raw
     );
 
     // fill
-    labomap_h.temp_raw       = app_vars.temp_raw;
-    labomap_h.humidity_raw   = app_vars.humidity_raw;
+    labomap_h.temperature_raw     = app_vars.temperature_raw;
+    labomap_h.humidity_raw        = app_vars.humidity_raw;
 
     // send
     success = ntw_transmit((uint8_t*)&labomap_h,sizeof(labomap_ht));
