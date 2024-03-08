@@ -5,8 +5,8 @@
 
 // measurement command for single-shot data acquisition mode
 //     0x2C: clock stretching enabled
-//     0x0D: medium repeatability (proportional to measurement duration)
-const uint8_t SHT31_CMD_MEASURE[]  = {0x2C, 0x0D};
+//     0x06: high repeatability
+const uint8_t SHT31_CMD_MEASURE[]  = {0x2C, 0x06};
 
 //=========================== prototypes ======================================
 
@@ -16,7 +16,7 @@ void sht31_init(void) {
     i2c_init();
 }
 
-void sht31_readTempHumidity(uint16_t* temp_raw, uint16_t* humidity_raw) {
+void sht31_readTempHumidity(uint16_t* temperature_raw, uint16_t* humidity_raw) {
     uint8_t data[6];
 
     // send command to measure temperature
@@ -26,8 +26,8 @@ void sht31_readTempHumidity(uint16_t* temp_raw, uint16_t* humidity_raw) {
     i2c_read(SHT31_I2C_ADDR, data, sizeof(data));
     
     // return
-    *temp_raw     = data[0] << 8 | data[1];
-    *humidity_raw = data[3] << 8 | data[4];
+    *temperature_raw    = (data[0]<<8) | data[1];
+    *humidity_raw       = (data[3]<<8) | data[4];
 }
 
 //=========================== private =========================================
