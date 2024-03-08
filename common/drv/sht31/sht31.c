@@ -5,8 +5,8 @@
 
 // measurement command for single-shot data acquisition mode
 //     0x2C: clock stretching enabled
-//     0x0D: medium repeatability (proportional to measurement duration)
-const uint8_t SHT31_CMD_MEASURE[]  = {0x2C, 0x0D};
+//     0x06: high repeatability
+const uint8_t SHT31_CMD_MEASURE[]  = {0x2C, 0x06};
 
 //=========================== prototypes ======================================
 
