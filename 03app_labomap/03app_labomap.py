@@ -2,8 +2,14 @@ import json
 import traceback
 import paho.mqtt.client as mqtt
 import struct
+import datetime
 
-MQTTTOPIC = "aiotsystems"
+MQTTTOPIC = "aiotsystems_labomap"
+
+def currentime():
+    now       = datetime.datetime.now() # current date and time
+    returnVal = now.strftime("%m/%d/%Y-%H:%M:%S")
+    return returnVal
 
 def parse_sht31(message):
     
@@ -17,9 +23,15 @@ def parse_sht31(message):
     (temperature_raw,humidity_raw) = struct.unpack('<HH', bytes(data))
 
     # convert
-    divisor     = 2**16 - 1
-    temperature = -45 + 175. * temperature_raw / divisor
-    humidity    = 100. * humidity_raw / divisor
+    if temperature_raw==0 and humidity_raw==0:
+        # reading from SHT31 failed
+        temperature = None
+        humidity    = None
+    else:
+        # reading from SHT31 succeeded
+        divisor     = 2**16 - 1
+        temperature = -45 + 175. * temperature_raw / divisor
+        humidity    = 100. * humidity_raw / divisor
 
     return (moteLabel, temperature, humidity)
 
@@ -31,12 +43,14 @@ def mqtt_on_message(client, userdata, msg):
     try:
         # raw message
         mqttmsg = json.loads(msg.payload.decode('ascii'))
-        print(f'from MQTT: {mqttmsg}')
         
         # parse SHT31 data
         if mqttmsg['payload']['name']=='notifData':
             (moteLabel, temperature, humidity) = parse_sht31(mqttmsg)
-            print(f'mote {moteLabel} reports temperature={temperature:>7.03f} C humidity={humidity:>7.03f} %')
+            if temperature==None and humidity==None:
+                print(f'{currentime()} mote {moteLabel} no sensor connected')
+            else:
+                print(f'{currentime()} mote {moteLabel} reports temperature={temperature:>7.03f} C humidity={humidity:>7.03f} %')
         
     except:
         print(f'ERROR mqtt_on_message: {traceback.format_exc()}')
