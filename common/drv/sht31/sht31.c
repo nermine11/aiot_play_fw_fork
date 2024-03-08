@@ -16,18 +16,34 @@ void sht31_init(void) {
     i2c_init();
 }
 
-void sht31_readTempHumidity(uint16_t* temperature_raw, uint16_t* humidity_raw) {
+bool sht31_readTempHumidity(uint16_t* temperature_raw, uint16_t* humidity_raw) {
     uint8_t data[6];
+    bool    rc;
+    bool    returnVal;
 
-    // send command to measure temperature
-    i2c_send(SHT31_I2C_ADDR, (uint8_t*)&SHT31_CMD_MEASURE, sizeof(SHT31_CMD_MEASURE));
+    returnVal = false; // by default, read did NOT succeed
+    do {
 
-    // read temperature data
-    i2c_read(SHT31_I2C_ADDR, data, sizeof(data));
+        // send command to measure temperature
+        rc = i2c_send(SHT31_I2C_ADDR, (uint8_t*)&SHT31_CMD_MEASURE, sizeof(SHT31_CMD_MEASURE));
+        if (rc==false) {
+            break;
+        }
+
+        // read temperature data
+        rc = i2c_read(SHT31_I2C_ADDR, data, sizeof(data));
+        if (rc==false) {
+            break;
+        }
     
-    // return
-    *temperature_raw    = (data[0]<<8) | data[1];
-    *humidity_raw       = (data[3]<<8) | data[4];
+        // if I get here, accessing the SHT31 is a success
+
+        returnVal            = true;
+        *temperature_raw     = (data[0]<<8) | data[1];
+        *humidity_raw        = (data[3]<<8) | data[4];
+    } while(0);
+
+    return returnVal;
 }
 
 //=========================== private =========================================
