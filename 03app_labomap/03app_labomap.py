@@ -8,7 +8,7 @@ MQTTTOPIC = "aiotsystems_labomap"
 
 def currentime():
     now       = datetime.datetime.now() # current date and time
-    returnVal = now.strftime("%m/%d/%Y-%H:%M:%S")
+    returnVal = now.strftime("%d-%b-%Y_%H:%M:%S")
     return returnVal
 
 def parse_sht31(message):
