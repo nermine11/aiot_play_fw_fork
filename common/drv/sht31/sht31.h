@@ -15,6 +15,6 @@
 //=========================== prototypes ======================================
 
 void sht31_init(void);
-void sht31_readTempHumidity(uint16_t* temp_raw, uint16_t* humidity_raw);
+bool sht31_readTempHumidity(uint16_t* temp_raw, uint16_t* humidity_raw);
 
 #endif

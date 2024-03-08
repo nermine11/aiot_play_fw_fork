@@ -27,8 +27,10 @@ app_vars_t app_vars;
 
 typedef struct {
     uint32_t       numcalls_periodtimer_cb;
-    uint32_t       numcalls_periodtimer_cb_success;
-    uint32_t       numcalls_periodtimer_cb_fail;
+    uint32_t       numcalls_periodtimer_cb_sht31_success;
+    uint32_t       numcalls_periodtimer_cb_sht31_fail;
+    uint32_t       numcalls_periodtimer_cb_transmit_success;
+    uint32_t       numcalls_periodtimer_cb_transmit_fail;
     uint32_t       numcalls_ntw_joining_cb;
     uint32_t       numcalls_ntw_getMoteId_cb;
     uint32_t       numcalls_ntw_getTime_cb;
@@ -85,29 +87,36 @@ int main(void) {
 
 void _periodtimer_cb(void) {
     labomap_ht labomap_h;
-    bool       success;
+    bool       rc;
 
     // debug
     app_dbg.numcalls_periodtimer_cb++;
 
     // read
-    sht31_readTempHumidity(
+    rc = sht31_readTempHumidity(
         &app_vars.temperature_raw,// temperature_raw
         &app_vars.humidity_raw    // humidity_raw
     );
 
     // fill
-    labomap_h.temperature_raw     = app_vars.temperature_raw;
-    labomap_h.humidity_raw        = app_vars.humidity_raw;
-
+    if (rc==true) {
+        app_dbg.numcalls_periodtimer_cb_sht31_success++;
+        labomap_h.temperature_raw     = app_vars.temperature_raw;
+        labomap_h.humidity_raw        = app_vars.humidity_raw;
+    } else {
+        app_dbg.numcalls_periodtimer_cb_sht31_fail++;
+        labomap_h.temperature_raw     = 0;
+        labomap_h.humidity_raw        = 0;
+    }
+    
     // send
-    success = ntw_transmit((uint8_t*)&labomap_h,sizeof(labomap_ht));
+    rc = ntw_transmit((uint8_t*)&labomap_h,sizeof(labomap_ht));
 
     // debug
-    if (success==true) {
-        app_dbg.numcalls_periodtimer_cb_success++;
+    if (rc==true) {
+        app_dbg.numcalls_periodtimer_cb_transmit_success++;
     } else {
-        app_dbg.numcalls_periodtimer_cb_fail++;
+        app_dbg.numcalls_periodtimer_cb_transmit_fail++;
     }
 }
 
