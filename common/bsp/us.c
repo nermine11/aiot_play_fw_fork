@@ -8,9 +8,7 @@
 
 typedef struct {
     bool     measurementOngoing;
-    uint16_t counterHigh;
-    uint16_t counterLow;
-    uint16_t distance;
+    uint32_t distance;
 } us_vars_t;
 
 us_vars_t us_vars;
@@ -51,11 +49,13 @@ void us_init(void) {
 }
 
 /**
-Returns the number of 32kHz ticks between the ECHO pin going high, then low.
-This pin measures the time it takes for the pulse to go back and forth between
+Returns the distance in cm, to the target.
+
+
+The ECHO pin measures the time it takes for the pulse to go back and forth between
 sensor and target.
 Let's assume the speed of sound in air at 20C is 343 m/s.
-So it's roughtly 1cm per tick, which is super convenient.
+So it's roughtly 1cm per 34ticks.
 Of course, this is the RTT, to get a distance, we just divided the value by 2.
 */
 uint16_t us_measure(void) {
@@ -65,26 +65,28 @@ uint16_t us_measure(void) {
 
     // arm
     us_vars.measurementOngoing         = true;
-    us_vars.counterHigh                = 0x0000;
-    us_vars.counterLow                 = 0x0000;
 
     // configure/start the RTC
+    NRF_TIMER0->MODE                   = 0x00000000;       // 0x00000000==Timer
+    NRF_TIMER0->BITMODE                = 3;                // 3==32Bit
+    NRF_TIMER0->PRESCALER              = 4;                // fTIMER = 16 MHz / (2^PRESCALER) -> 4==(fTIMER==16/(2^4)==1MHz)
     // 1098 7654 3210 9876 5432 1098 7654 3210
-    // xxxx xxxx xxxx FEDC xxxx xxxx xxxx xxBA (C=compare 0)
+    // xxxx xxxx xxFE DCBA xxxx xxxx xxxx xxBA (A=compare 0)
     // 0000 0000 0000 0001 0000 0000 0000 0000 
     //    0    0    0    1    0    0    0    0 0x00010000
-    NRF_RTC1->EVTENSET                 = 0x00010000;       // enable compare 0 event routing
-    NRF_RTC1->INTENSET                 = 0x00010000;       // enable compare 0 interrupts
+    NRF_TIMER0->INTENSET               = 0x00010000;       // enable compare 0 interrupts
 
     // enable interrupts
-    NVIC_SetPriority(RTC1_IRQn, 2);
-    NVIC_ClearPendingIRQ(RTC1_IRQn);
-    NVIC_EnableIRQ(RTC1_IRQn);
+    NVIC_SetPriority(TIMER0_IRQn, 2);
+    NVIC_ClearPendingIRQ(TIMER0_IRQn);
+    NVIC_EnableIRQ(TIMER0_IRQn);
 
-    // have RTC timeout; start RTC
-    NRF_RTC1->CC[0]                    = 32768>>1;         // 32768>>1 = 500ms
-    NRF_RTC1->TASKS_CLEAR              = 0x00000001;       // clear
-    NRF_RTC1->TASKS_START              = 0x00000001;       // start
+    // have TIMER0 timeout; start TIMER0
+    NRF_TIMER0->CC[0]                  = 500000;           // in us
+    NRF_TIMER0->CC[1]                  = 0;
+    NRF_TIMER0->CC[2]                  = 0;
+    NRF_TIMER0->TASKS_CLEAR            = 0x00000001;       // clear
+    NRF_TIMER0->TASKS_START            = 0x00000001;       // start
 
     // trigger
     gpio_P017_output_high();
@@ -94,15 +96,16 @@ uint16_t us_measure(void) {
     // block until finished
     while (us_vars.measurementOngoing==true);
     
-    if (us_vars.counterHigh==0x0000 && us_vars.counterLow==0x0000) {
+    if (NRF_TIMER0->CC[1]==0x0000 && NRF_TIMER0->CC[2]==0x0000) {
         us_vars.distance               = US_DISTANCE_INVALID;
     } else {
-        us_vars.distance               = us_vars.counterLow;
-        us_vars.distance              -= us_vars.counterHigh;
-        us_vars.distance              /= 2;
+        us_vars.distance               = NRF_TIMER0->CC[2];
+        us_vars.distance              -= NRF_TIMER0->CC[1];
+        us_vars.distance              /= 34; // 1cm per 34us
+        us_vars.distance              /= 2;  // distance is half the round-trip distance
     }
         
-    return us_vars.distance;
+    return (uint16_t)us_vars.distance;
 }
 
 //=========================== private =========================================
@@ -121,28 +124,28 @@ static void _echo_pin_toggle_cb(uint8_t pin_state) {
     us_dbg.numcalls_echo_pin_toggle_cb++;
     if (pin_state==1) {
         us_dbg.numcalls_echo_pin_toggle_cb_high++;
-        us_vars.counterHigh = NRF_RTC1->COUNTER;
+        NRF_TIMER0->TASKS_CAPTURE[1] = 0x00000001;
     } else {
         us_dbg.numcalls_echo_pin_toggle_cb_low++;
-        us_vars.counterLow  = NRF_RTC1->COUNTER;
+        NRF_TIMER0->TASKS_CAPTURE[2] = 0x00000001;
         // measurement now done
         us_vars.measurementOngoing     = false;
-        NRF_RTC1->TASKS_STOP           = 0x00000001;
+        NRF_TIMER0->TASKS_STOP         = 0x00000001;
     }
 }
 
 //=========================== interrupt handlers ==============================
 
-void RTC1_IRQHandler(void) {
+void TIMER0_IRQHandler(void) {
 
     // handle compare[0]
-    if (NRF_RTC1->EVENTS_COMPARE[0] == 0x00000001 ) {
+    if (NRF_TIMER0->EVENTS_COMPARE[0] == 0x00000001 ) {
 
         // clear flag
-        NRF_RTC1->EVENTS_COMPARE[0]    = 0x00000000;
+        NRF_TIMER0->EVENTS_COMPARE[0]  = 0x00000000;
 
-        // stop RTC1
-        NRF_RTC1->TASKS_STOP           = 0x00000001;
+        // stop NRF_TIMER0
+        NRF_TIMER0->TASKS_STOP         = 0x00000001;
 
         // measurement now done
         us_vars.measurementOngoing     = false;

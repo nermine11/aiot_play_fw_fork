@@ -71,6 +71,9 @@ int main(void) {
     // leds
     leds_init();
 
+    // us
+    us_init();
+
     // RTC0
     // configure/start the RTC
     // 1098 7654 3210 9876 5432 1098 7654 3210
