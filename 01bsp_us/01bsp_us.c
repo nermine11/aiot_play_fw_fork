@@ -1,17 +1,21 @@
 #include <string.h>
+#include <stdbool.h>
 #include "board.h"
 #include "us.h"
 #include "periodictimer.h"
 
 //=========================== defines =========================================
 
+#define MEASURING_PERIOD_S 1
+
 //=========================== typedef =========================================
 
 //=========================== variables =======================================
 
 typedef struct {
-    int16_t  us_val;
+    bool     doUsRead;
     uint8_t  us_num_reads;
+    uint16_t us_val;
 } app_vars_t;
 
 app_vars_t app_vars;
@@ -35,25 +39,27 @@ int main(void) {
 
     // initialize the periodic timer
     periodictimer_init(
-        1,                   // period_s
+        MEASURING_PERIOD_S,  // period_s
         _periodtimer_cb      // periodtimer_cb
     );
 
     // main loop
     while(1) {
         
-        // sleep while waiting for an event
-        board_sleep();
+        // wait to be asked to do read
+        while(app_vars.doUsRead==false) {
+            board_sleep();
+        }
+
+        // do read
+        app_vars.us_num_reads++;
+        app_vars.us_val   = us_measure();
+        app_vars.doUsRead = false;
     }
 }
 
 //=========================== private =========================================
 
 void _periodtimer_cb(void) {
-
-    // read
-    app_vars.us_val = us_measure();
-
-    // increment
-    app_vars.us_num_reads++;
+    app_vars.doUsRead = true;
 }
