@@ -31,8 +31,9 @@ typedef void (*fsm_reply_callback)(void);
 
 typedef struct {
     // interface
+    ntw_joining_cbt     ntw_joining_cb;
     ntw_getMoteId_cbt   ntw_getMoteId_cb;
-    ntw_getTime_cbt     ntw_getTime_cb;
+    ntw_time_cbt        ntw_time_cb;
     ntw_receive_cbt     ntw_receive_cb;
     // ipmt
     bool                isOper;                            // true iff is operational
@@ -107,7 +108,12 @@ void     hfclock_start(void);
 
 //=========================== public ==========================================
 
-void ntw_init(ntw_getMoteId_cbt ntw_getMoteId_cb, ntw_getTime_cbt ntw_getTime_cb, ntw_receive_cbt ntw_receive_cb) {
+void ntw_init(
+        ntw_joining_cbt   ntw_joining_cb,
+        ntw_getMoteId_cbt ntw_getMoteId_cb,
+        ntw_time_cbt      ntw_time_cb,
+        ntw_receive_cbt   ntw_receive_cb
+    ) {
 
     // reset variables
     memset(&ntw_vars,0x00,sizeof(ntw_vars_t));
@@ -115,8 +121,9 @@ void ntw_init(ntw_getMoteId_cbt ntw_getMoteId_cb, ntw_getTime_cbt ntw_getTime_cb
     memset(&ntw_dbg, 0x00,sizeof(ntw_dbg_t));
 
     // store params
+    ntw_vars.ntw_joining_cb       = ntw_joining_cb;
     ntw_vars.ntw_getMoteId_cb     = ntw_getMoteId_cb;
-    ntw_vars.ntw_getTime_cb       = ntw_getTime_cb;
+    ntw_vars.ntw_time_cb          = ntw_time_cb;
     ntw_vars.ntw_receive_cb       = ntw_receive_cb;
 
     // initialize the ipmt module
@@ -165,7 +172,7 @@ void fsm_scheduleEvent(uint16_t delay, fsm_timer_callback cb) {
     NVIC_ClearPendingIRQ(RTC1_IRQn);
     NVIC_EnableIRQ(RTC1_IRQn);
     
-    //
+    NRF_RTC1->TASKS_CLEAR              = 0x00000001;
     NRF_RTC1->CC[0]                    = delay;            // 32768>>3 = 125 ms
     NRF_RTC1->TASKS_START              = 0x00000001;       // start RTC1
 }
@@ -423,6 +430,9 @@ void api_join_reply(void) {
 
    // cancel timeout
    fsm_cancelEvent();
+
+   // let application know
+   ntw_vars.ntw_joining_cb();
    
    // choose next step
    // no next step at this point. FSM will advance when we received a "joined"
@@ -526,7 +536,7 @@ void api_getTime_reply(void) {
    reply = (dn_ipmt_getParameter_time_rpt*)ntw_vars.replyBuf;
    
    // handle
-   ntw_vars.ntw_getTime_cb(reply);
+   ntw_vars.ntw_time_cb(reply);
 }
 
 // sendTo
@@ -601,9 +611,6 @@ void RTC1_IRQHandler(void) {
 
         // clear flag
         NRF_RTC1->EVENTS_COMPARE[0]    = 0x00000000;
-
-        // clear COUNTER
-        NRF_RTC1->TASKS_CLEAR          = 0x00000001;
 
         // debug
         ntw_dbg.num_ISR_RTC1_IRQHandler_COMPARE0++;

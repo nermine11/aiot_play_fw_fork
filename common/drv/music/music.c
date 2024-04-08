@@ -2,8 +2,21 @@
 #include <stdbool.h>
 #include "music.h"
 #include "pwm.h"
+#include "leds.h"
+#include "fet.h"
 
 //=========================== variables =======================================
+
+typedef struct {
+    uint32_t noteIdx;
+    note_t*  notes;
+    uint32_t numnotes;
+    uint16_t speed;
+    uint8_t  ledctr;
+    bool     inhibit;
+} music_vars_t;
+
+music_vars_t music_vars;
 
 typedef struct {
     bool     song_playing;
@@ -14,30 +27,37 @@ typedef struct {
 
 music_dbg_t music_dbg;
 
-typedef struct {
-    uint32_t noteIdx;
-    note_t*  notes;
-    uint32_t numnotes;
-    uint16_t speed;
-} music_vars_t;
-
-music_vars_t music_vars;
-
 //=========================== prototypes ======================================
 
 static void _start_song(uint16_t speed);
 static void _play_cur_note(void);
 static void _end_song(void);
+static void _leds_off(void);
+static void _leds_shift(void);
+static void _leds_applyctr(void);
 
 //=========================== public ==========================================
 
 void music_init(void) {
+
+    // clear variables
+    memset(&music_vars,0x00,sizeof(music_vars_t));
+    memset(&music_dbg, 0x00,sizeof(music_dbg_t) );
+
+    // by default, don't play music
+    music_vars.inhibit = true;
 
     // debug
     music_dbg.num_music_init++;
 
     // pwm
     pwm_init();
+
+    // leds
+    leds_init();
+
+    // fet
+    fet_init();
 
     //=== RTC2
     
@@ -52,6 +72,10 @@ void music_init(void) {
     NVIC_SetPriority(RTC2_IRQn, 1);
     NVIC_ClearPendingIRQ(RTC2_IRQn);
     NVIC_EnableIRQ(RTC2_IRQn);
+}
+
+void music_inhibit(bool inhibit) {
+    music_vars.inhibit = inhibit;
 }
 
 void music_play(songtitle_t songtitle, uint8_t trackIdx) {
@@ -223,6 +247,10 @@ void music_play(songtitle_t songtitle, uint8_t trackIdx) {
 //=========================== private =========================================
 
 static void _start_song(uint16_t speed) {
+    _leds_off();
+    if (music_vars.inhibit==false) {
+        fet_on();
+    }
     music_dbg.song_playing   = true;
     music_vars.noteIdx       = 0;
     NRF_RTC2->PRESCALER      = speed;
@@ -230,15 +258,59 @@ static void _start_song(uint16_t speed) {
 }
 
 static void _play_cur_note(void) {
+    _leds_shift();
     music_dbg.last_note      = &music_vars.notes[music_vars.noteIdx];
     pwm_setperiod(music_vars.notes[music_vars.noteIdx].val);
     NRF_RTC2->CC[0]          = music_vars.notes[music_vars.noteIdx].duration;
 }
 
 static void _end_song(void) {
+    _leds_off();
+    fet_off();
     NRF_RTC2->TASKS_STOP     = 0x00000001;
     pwm_stop();
     music_dbg.song_playing   = false;
+}
+
+static void _leds_off(void) {
+    music_vars.ledctr = 0;
+    _leds_applyctr();
+}
+
+static void _leds_shift(void) {
+    music_vars.ledctr++;
+    _leds_applyctr();
+}
+
+static void _leds_applyctr(void) {
+    
+    // green
+    if (music_vars.ledctr & (1<<0)) {
+        leds_green_on();
+    } else {
+        leds_green_off();
+    }
+
+    // red
+    if (music_vars.ledctr & (1<<1)) {
+        leds_red_on();
+    } else {
+        leds_red_off();
+    }
+
+    // blue
+    if (music_vars.ledctr & (1<<2)) {
+        leds_blue_on();
+    } else {
+        leds_blue_off();
+    }
+
+    // white
+    if (music_vars.ledctr & (1<<3)) {
+        leds_white_on();
+    } else {
+        leds_white_off();
+    }
 }
 
 //=========================== interrupt handlers ==============================
