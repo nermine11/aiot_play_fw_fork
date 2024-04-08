@@ -38,15 +38,15 @@ typedef struct {
 app_vars_t app_vars;
 
 typedef struct {
-    uint32_t       us_num_reads;
     uint32_t       numcalls_ntw_getMoteId_cb;
-    uint32_t       numcalls_ntw_getTime_cb;
-    uint32_t       numcalls_ntw_receive_cb;
-    uint32_t       num_STEP_3_MUSIC_WAITING_ASN3;
-    uint32_t       num_STEP_4_MUSIC_WAITING_ASN4_ROLLOVER;
     uint32_t       numerr_ntw_getMoteId_rc;
+    uint32_t       us_num_reads;
+    uint32_t       numcalls_ntw_receive_cb;
+    uint32_t       numcalls_ntw_getTime_cb;
     uint32_t       numerr_ntw_getTime_rc;
     uint32_t       numerr_ntw_getTime_wrong_step;
+    uint32_t       num_ntw_getTime_STEP_3_MUSIC_WAITING_ASN3;
+    uint32_t       num_ntw_getTime_STEP_4_MUSIC_WAITING_ASN4_ROLLOVER;
 } app_dbg_t;
 
 app_dbg_t app_dbg;
@@ -230,7 +230,7 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
                 app_dbg.numerr_ntw_getTime_wrong_step++;
                 break;
             case STEP_3_MUSIC_WAITING_ASN3:
-                app_dbg.num_STEP_3_MUSIC_WAITING_ASN3++;
+                app_dbg.num_ntw_getTime_STEP_3_MUSIC_WAITING_ASN3++;
                 if ( (app_vars.asn[3]&0x3f)==0) {
                     // step 2: I'm at the right ASN[3]
                     // wait for ASN[4] to roll over
@@ -242,7 +242,7 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
                 }
                 break;
             case STEP_4_MUSIC_WAITING_ASN4_ROLLOVER:
-                app_dbg.num_STEP_4_MUSIC_WAITING_ASN4_ROLLOVER++;
+                app_dbg.num_ntw_getTime_STEP_4_MUSIC_WAITING_ASN4_ROLLOVER++;
                 app_vars.step         = STEP_2_US;
                 NRF_RTC0->CC[0]       = POLLING_PERIOD_US;
                 trackIdx              = app_vars.moteId-2; // the first mote has moteId 2, yet we want trackIdx 0 for it
