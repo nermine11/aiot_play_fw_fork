@@ -61,6 +61,7 @@ void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen);
 //=========================== main ============================================
 
 int main(void) {
+    uint8_t txBuf[1];
 
     //=== initialize variables
     memset(&app_vars,0x00,sizeof(app_vars));
@@ -117,11 +118,21 @@ int main(void) {
 
             if (app_vars.someoneDetected==false) {
                 // state change
-                app_vars.someoneDetected = true;
+
+                // LEDs
                 leds_green_on();
                 leds_red_off();
+
+                // remember
+                app_vars.someoneDetected = true;
+
+                // send
+                txBuf[0] = 0x01;
+                ntw_transmit(txBuf,sizeof(txBuf));
             } else {
                 // same state
+
+                // LEDs
                 leds_green_off();
                 leds_red_off();
             }
@@ -130,11 +141,22 @@ int main(void) {
 
             if (app_vars.someoneDetected==true) {
                 // state change
-                app_vars.someoneDetected = false;
+                
+                // LEDs
                 leds_green_off();
                 leds_red_on();
+
+                // remember
+                app_vars.someoneDetected = false;
+
+                // send
+                txBuf[0] = 0x00;
+                ntw_transmit(txBuf,sizeof(txBuf));
+
             } else {
                 // same state
+
+                // LEDs
                 leds_green_off();
                 leds_red_off();
             }
