@@ -73,18 +73,18 @@ uint16_t us_measure(void) {
     // xxxx xxxx xxxx FEDC xxxx xxxx xxxx xxBA (C=compare 0)
     // 0000 0000 0000 0001 0000 0000 0000 0000 
     //    0    0    0    1    0    0    0    0 0x00010000
-    NRF_RTC2->EVTENSET                 = 0x00010000;       // enable compare 0 event routing
-    NRF_RTC2->INTENSET                 = 0x00010000;       // enable compare 0 interrupts
+    NRF_RTC1->EVTENSET                 = 0x00010000;       // enable compare 0 event routing
+    NRF_RTC1->INTENSET                 = 0x00010000;       // enable compare 0 interrupts
 
     // enable interrupts
-    NVIC_SetPriority(RTC2_IRQn, 2);
-    NVIC_ClearPendingIRQ(RTC2_IRQn);
-    NVIC_EnableIRQ(RTC2_IRQn);
+    NVIC_SetPriority(RTC1_IRQn, 2);
+    NVIC_ClearPendingIRQ(RTC1_IRQn);
+    NVIC_EnableIRQ(RTC1_IRQn);
 
     // have RTC timeout; start RTC
-    NRF_RTC2->CC[0]                    = 32768>>1;         // 32768>>1 = 500ms
-    NRF_RTC2->TASKS_CLEAR              = 0x00000001;       // clear
-    NRF_RTC2->TASKS_START              = 0x00000001;       // start
+    NRF_RTC1->CC[0]                    = 32768>>1;         // 32768>>1 = 500ms
+    NRF_RTC1->TASKS_CLEAR              = 0x00000001;       // clear
+    NRF_RTC1->TASKS_START              = 0x00000001;       // start
 
     // trigger
     gpio_P017_output_high();
@@ -121,28 +121,28 @@ static void _echo_pin_toggle_cb(uint8_t pin_state) {
     us_dbg.numcalls_echo_pin_toggle_cb++;
     if (pin_state==1) {
         us_dbg.numcalls_echo_pin_toggle_cb_high++;
-        us_vars.counterHigh = NRF_RTC2->COUNTER;
+        us_vars.counterHigh = NRF_RTC1->COUNTER;
     } else {
         us_dbg.numcalls_echo_pin_toggle_cb_low++;
-        us_vars.counterLow  = NRF_RTC2->COUNTER;
+        us_vars.counterLow  = NRF_RTC1->COUNTER;
         // measurement now done
         us_vars.measurementOngoing     = false;
-        NRF_RTC2->TASKS_STOP           = 0x00000001;
+        NRF_RTC1->TASKS_STOP           = 0x00000001;
     }
 }
 
 //=========================== interrupt handlers ==============================
 
-void RTC2_IRQHandler(void) {
+void RTC1_IRQHandler(void) {
 
     // handle compare[0]
-    if (NRF_RTC2->EVENTS_COMPARE[0] == 0x00000001 ) {
+    if (NRF_RTC1->EVENTS_COMPARE[0] == 0x00000001 ) {
 
         // clear flag
-        NRF_RTC2->EVENTS_COMPARE[0]    = 0x00000000;
+        NRF_RTC1->EVENTS_COMPARE[0]    = 0x00000000;
 
         // stop RTC1
-        NRF_RTC2->TASKS_STOP           = 0x00000001;
+        NRF_RTC1->TASKS_STOP           = 0x00000001;
 
         // measurement now done
         us_vars.measurementOngoing     = false;
