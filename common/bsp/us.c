@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdbool.h>
 #include "us.h"
 #include "gpio.h"
 #include "busywait.h"
@@ -6,7 +7,10 @@
 //=========================== variables =======================================
 
 typedef struct {
-    uint32_t dummy;
+    bool     measurementOngoing;
+    uint16_t counterHigh;
+    uint16_t counterLow;
+    uint16_t distance;
 } us_vars_t;
 
 us_vars_t us_vars;
@@ -33,6 +37,7 @@ void us_init(void) {
     // clear module variables
     memset(&us_vars,0x00,sizeof(us_vars_t));
     memset(&us_dbg, 0x00,sizeof(us_dbg_t) );
+    us_vars.measurementOngoing = false;
 
     // debug
     us_dbg.numcalls_us_init++;
@@ -45,18 +50,59 @@ void us_init(void) {
     gpio_P015_input_init(_echo_pin_toggle_cb);
 }
 
+/**
+Returns the number of 32kHz ticks between the ECHO pin going high, then low.
+This pin measures the time it takes for the pulse to go back and forth between
+sensor and target.
+Let's assume the speed of sound in air at 20C is 343 m/s.
+So it's roughtly 1cm per tick, which is super convenient.
+Of course, this is the RTT, to get a distance, we just divided the value by 2.
+*/
 uint16_t us_measure(void) {
     
     // debug
     us_dbg.numcalls_us_measure++;
 
+    // arm
+    us_vars.measurementOngoing         = true;
+    us_vars.counterHigh                = 0x0000;
+    us_vars.counterLow                 = 0x0000;
+
+    // configure/start the RTC
+    // 1098 7654 3210 9876 5432 1098 7654 3210
+    // xxxx xxxx xxxx FEDC xxxx xxxx xxxx xxBA (C=compare 0)
+    // 0000 0000 0000 0001 0000 0000 0000 0000 
+    //    0    0    0    1    0    0    0    0 0x00010000
+    NRF_RTC2->EVTENSET                 = 0x00010000;       // enable compare 0 event routing
+    NRF_RTC2->INTENSET                 = 0x00010000;       // enable compare 0 interrupts
+
+    // enable interrupts
+    NVIC_SetPriority(RTC2_IRQn, 2);
+    NVIC_ClearPendingIRQ(RTC2_IRQn);
+    NVIC_EnableIRQ(RTC2_IRQn);
+
+    // have RTC timeout; start RTC
+    NRF_RTC2->CC[0]                    = 32768>>1;         // 32768>>1 = 500ms
+    NRF_RTC2->TASKS_CLEAR              = 0x00000001;       // clear
+    NRF_RTC2->TASKS_START              = 0x00000001;       // start
+
     // trigger
     gpio_P017_output_high();
     _wait_10us();
     gpio_P017_output_low();
-
-    // TODO
-    return 1000;
+    
+    // block until finished
+    while (us_vars.measurementOngoing==true);
+    
+    if (us_vars.counterHigh==0x0000 && us_vars.counterLow==0x0000) {
+        us_vars.distance               = US_DISTANCE_INVALID;
+    } else {
+        us_vars.distance               = us_vars.counterLow;
+        us_vars.distance              -= us_vars.counterHigh;
+        us_vars.distance              /= 2;
+    }
+        
+    return us_vars.distance;
 }
 
 //=========================== private =========================================
@@ -75,9 +121,30 @@ static void _echo_pin_toggle_cb(uint8_t pin_state) {
     us_dbg.numcalls_echo_pin_toggle_cb++;
     if (pin_state==1) {
         us_dbg.numcalls_echo_pin_toggle_cb_high++;
+        us_vars.counterHigh = NRF_RTC2->COUNTER;
     } else {
         us_dbg.numcalls_echo_pin_toggle_cb_low++;
+        us_vars.counterLow  = NRF_RTC2->COUNTER;
+        // measurement now done
+        us_vars.measurementOngoing     = false;
+        NRF_RTC2->TASKS_STOP           = 0x00000001;
     }
 }
 
 //=========================== interrupt handlers ==============================
+
+void RTC2_IRQHandler(void) {
+
+    // handle compare[0]
+    if (NRF_RTC2->EVENTS_COMPARE[0] == 0x00000001 ) {
+
+        // clear flag
+        NRF_RTC2->EVENTS_COMPARE[0]    = 0x00000000;
+
+        // stop RTC1
+        NRF_RTC2->TASKS_STOP           = 0x00000001;
+
+        // measurement now done
+        us_vars.measurementOngoing     = false;
+    }
+}
