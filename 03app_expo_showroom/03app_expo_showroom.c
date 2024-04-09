@@ -16,10 +16,10 @@
 #define RTC0PERIOD_STEP_3_MUSIC_ASN3   (32768>>1)     // 32768>>1 = 500ms
 #define US_THRESHOLD_SOMEONE           150            // in cm
 
-#define MSGID_CMD_LOWPOWER        0x01
-#define MSGID_CMD_ACTIVE          0x02
-#define MSGID_CMD_MUSIC           0x03
-#define MSGID_NOTIF_US            0x04
+#define MSGID_CMD_LOWPOWER             0x01
+#define MSGID_CMD_ACTIVE               0x02
+#define MSGID_CMD_MUSIC                0x03
+#define MSGID_NOTIF_US                 0x04
 
 //=========================== typedef =========================================
 
@@ -250,7 +250,7 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
                 break;
             case STEP_3_MUSIC_ASN3:
                 app_dbg.num_ntw_getTime_STEP_3_ASN3++;
-                if ( (app_vars.asn[3]&0x3f)==0) {
+                if ( (app_vars.asn[3]&0x03)==0) {
                     // step 2: I'm at the right ASN[3]
                     // wait for ASN[4] to roll over
 
