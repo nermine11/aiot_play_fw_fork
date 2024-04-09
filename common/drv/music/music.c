@@ -44,8 +44,8 @@ void music_init(void) {
     memset(&music_vars,0x00,sizeof(music_vars_t));
     memset(&music_dbg, 0x00,sizeof(music_dbg_t) );
 
-    // by default, don't play music
-    music_vars.inhibit = true;
+    // by default, play the music
+    music_vars.inhibit = false;
 
     // debug
     music_dbg.num_music_init++;

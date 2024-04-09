@@ -9,44 +9,57 @@
 
 //=========================== defines =========================================
 
-#define TICKS_PER_SLOT        234           // 0.00725*32768
-#define POLLING_PERIOD_MOTEID (  32768)     //    32768 = 1s
-#define POLLING_PERIOD_US     (5*32768)     //  5*32768 = 5s
-#define US_THRESHOLD_SOMEONE  150           // in cm
+#define TICKS_PER_SLOT                 234            // 0.00725*32768
+#define RTC0PERIOD_STEP_0_JOINING      (  32768)      //    32768 = 1s
+#define RTC0PERIOD_STEP_1_LOWPOWER     (5*32768)      //  5*32768 = 5s
+#define RTC0PERIOD_STEP_2_US           (5*32768)      //  5*32768 = 5s
+#define RTC0PERIOD_STEP_3_MUSIC_ASN3   (32768>>1)     // 32768>>1 = 500ms
+#define US_THRESHOLD_SOMEONE           150            // in cm
+
+#define MSGID_CMD_LOWPOWER        0x01
+#define MSGID_CMD_ACTIVE          0x02
+#define MSGID_CMD_MUSIC           0x03
+#define MSGID_NOTIF_US            0x04
 
 //=========================== typedef =========================================
 
 typedef enum {
     STEP_0_JOINING,
-    STEP_1_LOW_POWER, // not implemented
+    STEP_1_LOWPOWER,
     STEP_2_US,
-    STEP_3_MUSIC_WAITING_ASN3,
-    STEP_4_MUSIC_WAITING_ASN4_ROLLOVER,
+    STEP_3_MUSIC_ASN3,
+    STEP_4_MUSIC_ASN4,
 } step_t;
 
 //=========================== variables =======================================
 
 typedef struct {
-    step_t         step;
-    uint16_t       moteId;
-    bool           doUsRead;
-    bool           someoneDetected;
-    uint16_t       us_val;
-    uint8_t        asn[5];
+    step_t    step;
+    uint16_t  moteId;
+    bool      doUsRead;
+    bool      someoneDetected;
+    uint16_t  us_val;
+    uint8_t   asn[5];
 } app_vars_t;
 
 app_vars_t app_vars;
 
 typedef struct {
-    uint32_t       numcalls_ntw_getMoteId_cb;
-    uint32_t       numerr_ntw_getMoteId_rc;
-    uint32_t       us_num_reads;
-    uint32_t       numcalls_ntw_receive_cb;
-    uint32_t       numcalls_ntw_getTime_cb;
-    uint32_t       numerr_ntw_getTime_rc;
-    uint32_t       numerr_ntw_getTime_wrong_step;
-    uint32_t       num_ntw_getTime_STEP_3_MUSIC_WAITING_ASN3;
-    uint32_t       num_ntw_getTime_STEP_4_MUSIC_WAITING_ASN4_ROLLOVER;
+    uint32_t  numcalls_main;
+    uint32_t  us_num_reads;
+    uint32_t  numcalls_ntw_joining_cb;
+    uint32_t  numcalls_ntw_getMoteId_cb;
+    uint32_t  numerr_ntw_getMoteId_rc;
+    uint32_t  numcalls_ntw_getTime_cb;
+    uint32_t  numerr_ntw_getTime_rc;
+    uint32_t  numerr_ntw_getTime_wrong_step;
+    uint32_t  num_ntw_getTime_STEP_3_ASN3;
+    uint32_t  num_ntw_getTime_STEP_4_ASN4;
+    uint32_t  numcalls_ntw_receive_cb;
+    uint32_t  numerr_ntw_receive_cb_wrong_msgid;
+    uint32_t  numcalls_RTC0_IRQHandler;
+    uint32_t  numcalls_RTC0_IRQHandler_EVENTS_COMPARE0;
+    uint32_t  numerr_RTC0_IRQHandler_wrong_step;
 } app_dbg_t;
 
 app_dbg_t app_dbg;
@@ -67,6 +80,9 @@ int main(void) {
     memset(&app_vars,0x00,sizeof(app_vars));
     memset(&app_dbg, 0x00,sizeof(app_dbg));
     app_vars.step                      = STEP_0_JOINING;
+
+    // debug
+    app_dbg.numcalls_main++;
 
     //=== initialize bsp/ntw
     board_init();
@@ -96,7 +112,7 @@ int main(void) {
     NVIC_EnableIRQ(RTC0_IRQn);
 
     // query getMoteId periodically
-    NRF_RTC0->CC[0]                    = POLLING_PERIOD_MOTEID;
+    NRF_RTC0->CC[0]                    = RTC0PERIOD_STEP_0_JOINING;
     NRF_RTC0->TASKS_START              = 0x00000001;
 
     // white led: no connection to network yet
@@ -169,6 +185,9 @@ int main(void) {
 
 void _ntw_joining_cb(void) {
     
+    // debug
+    app_dbg.numcalls_ntw_joining_cb++;
+
     // white led: no connection to mote yet
     leds_white_off();
 
@@ -197,7 +216,7 @@ void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply) {
         leds_blue_off();
 
         // change step
-        app_vars.step = STEP_2_US;
+        app_vars.step = STEP_1_LOWPOWER;
     
     } while(0);
 }
@@ -224,27 +243,27 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
 
         switch (app_vars.step) {
             case STEP_0_JOINING:
-            case STEP_1_LOW_POWER:
+            case STEP_1_LOWPOWER:
             case STEP_2_US:
                 // cannot happen
                 app_dbg.numerr_ntw_getTime_wrong_step++;
                 break;
-            case STEP_3_MUSIC_WAITING_ASN3:
-                app_dbg.num_ntw_getTime_STEP_3_MUSIC_WAITING_ASN3++;
+            case STEP_3_MUSIC_ASN3:
+                app_dbg.num_ntw_getTime_STEP_3_ASN3++;
                 if ( (app_vars.asn[3]&0x3f)==0) {
                     // step 2: I'm at the right ASN[3]
                     // wait for ASN[4] to roll over
 
                     num_asns_to_wait  = 0xff-app_vars.asn[4];
                     num_ticks_to_wait = num_asns_to_wait*TICKS_PER_SLOT;
-                    app_vars.step     = STEP_4_MUSIC_WAITING_ASN4_ROLLOVER;
+                    app_vars.step     = STEP_4_MUSIC_ASN4;
                     NRF_RTC0->CC[0]   = num_ticks_to_wait;
                 }
                 break;
-            case STEP_4_MUSIC_WAITING_ASN4_ROLLOVER:
-                app_dbg.num_ntw_getTime_STEP_4_MUSIC_WAITING_ASN4_ROLLOVER++;
+            case STEP_4_MUSIC_ASN4:
+                app_dbg.num_ntw_getTime_STEP_4_ASN4++;
                 app_vars.step         = STEP_2_US;
-                NRF_RTC0->CC[0]       = POLLING_PERIOD_US;
+                NRF_RTC0->CC[0]       = RTC0PERIOD_STEP_2_US;
                 trackIdx              = app_vars.moteId-2; // the first mote has moteId 2, yet we want trackIdx 0 for it
                 music_play(SONGTITLE_STAR_WARS,trackIdx);
                 break;
@@ -259,16 +278,29 @@ void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen) {
     app_dbg.numcalls_ntw_receive_cb++;
 
     // handle
-    if (buf[0]==0x00) {
-        music_inhibit(true);
-    } else {
-        music_inhibit(false);
+    switch (buf[0]) {
+        case MSGID_CMD_LOWPOWER:
+            app_vars.step = STEP_1_LOWPOWER;
+            break;
+        case MSGID_CMD_ACTIVE:
+            app_vars.step = STEP_2_US;
+            break;
+        case MSGID_CMD_MUSIC:
+            app_vars.step = STEP_3_MUSIC_ASN3;
+            break;
+        default:
+            // cannot happen
+            app_dbg.numerr_ntw_receive_cb_wrong_msgid++;
+            break;
     }
 }
 
 //=========================== interrupt handlers ==============================
 
 void RTC0_IRQHandler(void) {
+    
+    // debug
+    app_dbg.numcalls_RTC0_IRQHandler++;
     
     // handle compare[0]
     if (NRF_RTC0->EVENTS_COMPARE[0] == 0x00000001 ) {
@@ -279,23 +311,32 @@ void RTC0_IRQHandler(void) {
         // clear COUNTER
         NRF_RTC0->TASKS_CLEAR          = 0x00000001;
 
+        // debug
+        app_dbg.numcalls_RTC0_IRQHandler_EVENTS_COMPARE0++;
+
         // handle
         switch (app_vars.step) {
             case STEP_0_JOINING:
+                NRF_RTC0->CC[0]        = RTC0PERIOD_STEP_0_JOINING;
                 ntw_getMoteId();
                 break;
-            case STEP_1_LOW_POWER:
-                // not implemented
+            case STEP_1_LOWPOWER:
+                NRF_RTC0->CC[0]        = RTC0PERIOD_STEP_1_LOWPOWER;
                 break;
             case STEP_2_US:
-                NRF_RTC0->CC[0]        = POLLING_PERIOD_US;
+                NRF_RTC0->CC[0]        = RTC0PERIOD_STEP_2_US;
                 app_vars.doUsRead      = true;
                 break;
-            case STEP_3_MUSIC_WAITING_ASN3:
-                // TODO
+            case STEP_3_MUSIC_ASN3:
+                NRF_RTC0->CC[0]        = RTC0PERIOD_STEP_3_MUSIC_ASN3;
+                ntw_getTime();
                 break;
-            case STEP_4_MUSIC_WAITING_ASN4_ROLLOVER:
-                // TODO
+            case STEP_4_MUSIC_ASN4:
+                ntw_getTime();
+                break;
+            default:
+                // cannot happen
+                app_dbg.numerr_RTC0_IRQHandler_wrong_step++;
                 break;
         }
     }
