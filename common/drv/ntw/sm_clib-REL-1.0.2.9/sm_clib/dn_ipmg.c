@@ -97,7 +97,7 @@ void dn_ipmg_init(dn_ipmg_notif_cbt notifCb, uint8_t* notifBuf, uint8_t notifBuf
    dn_serial_mg_init(dn_ipmg_rxSerialRequest, statusCb);
 }
 
-void dn_ipmg_cancelTx() {
+void dn_ipmg_cancelTx(void) {
    
    // lock the module
    dn_lock();
@@ -109,7 +109,7 @@ void dn_ipmg_cancelTx() {
 }
 
 
-dn_err_t dn_ipmg_initiateConnect() {
+dn_err_t dn_ipmg_initiateConnect(void) {
    dn_err_t rc;
    
    // lock the module

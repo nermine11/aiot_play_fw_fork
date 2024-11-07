@@ -33,9 +33,9 @@ dn_hdlc_vars_t dn_hdlc_vars;
 // callback handlers
 void dn_hdlc_rxByte(uint8_t rxbyte);
 // input
-void dn_hdlc_inputOpen();
+void dn_hdlc_inputOpen(void);
 void dn_hdlc_inputWrite(uint8_t b);
-void dn_hdlc_inputClose();
+void dn_hdlc_inputClose(void);
 // helpers
 uint16_t dn_hdlc_crcIteration(uint16_t crc, uint8_t data_byte);
 
@@ -131,7 +131,7 @@ void dn_hdlc_rxByte(uint8_t rxbyte) {
 /**
 \brief Start an HDLC frame in the output buffer.
 */
-void dn_hdlc_outputOpen() {
+void dn_hdlc_outputOpen(void) {
    // initialize the value of the CRC
    dn_hdlc_vars.outputCrc = DN_HDLC_CRCINIT;
    
@@ -162,7 +162,7 @@ void dn_hdlc_outputWrite(uint8_t b) {
 /**
 \brief Finalize the outgoing HDLC frame.
 */
-void dn_hdlc_outputClose() {
+void dn_hdlc_outputClose(void) {
    uint16_t   finalCrc;
    
    // finalize the calculation of the CRC
@@ -184,7 +184,7 @@ void dn_hdlc_outputClose() {
 /**
 \brief Start an HDLC frame in the input buffer.
 */
-void dn_hdlc_inputOpen() {
+void dn_hdlc_inputOpen(void) {
    // reset the input buffer index
    dn_hdlc_vars.inputBufFill = 0;
    
@@ -218,7 +218,7 @@ void dn_hdlc_inputWrite(uint8_t b) {
 /**
 \brief Finalize the incoming HDLC frame.
 */
-void dn_hdlc_inputClose() {
+void dn_hdlc_inputClose(void) {
    
    // verify the validity of the frame
    if (dn_hdlc_vars.inputCrc==DN_HDLC_CRCGOOD) {

@@ -115,7 +115,7 @@ void dn_whmt_init(dn_whmt_notif_cbt notifCb, uint8_t* notifBuf, uint8_t notifBuf
    dn_serial_mt_init(dn_whmt_rxSerialRequest);
 }
 
-void dn_whmt_cancelTx() {
+void dn_whmt_cancelTx(void) {
    
    // lock the module
    dn_lock();

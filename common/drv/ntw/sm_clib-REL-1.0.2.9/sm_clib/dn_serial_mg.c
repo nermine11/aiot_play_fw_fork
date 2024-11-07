@@ -62,7 +62,7 @@ void dn_serial_mg_init(dn_serial_request_cbt requestCb, dn_status_change_cbt sta
    dn_hdlc_init(dn_serial_mg_rxHdlcFrame);
 }
 
-dn_err_t dn_serial_mg_initiateConnect() {
+dn_err_t dn_serial_mg_initiateConnect(void) {
    uint8_t payload[3];
    
    // prepare hello packet

@@ -6,11 +6,11 @@
 
 //=========================== public ==========================================
 
-void dn_lock() {
+void dn_lock(void) {
    // this sample is single threaded, no need to lock.
 }
 
-void dn_unlock() {
+void dn_unlock(void) {
    // this sample is single threaded, no need to lock.
 }
 

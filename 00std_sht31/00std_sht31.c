@@ -120,7 +120,7 @@ void SHT31_readTempHumidity(uint16_t* temp_raw, uint16_t* humidity_raw) {
     uint8_t data[6];
 
     // send command to measure temperature
-    i2c_send(SHT31_ADDR, &CMD_MEASURE, sizeof(CMD_MEASURE));
+    i2c_send(SHT31_ADDR, CMD_MEASURE, sizeof(CMD_MEASURE));
 
     // read temperature data
     i2c_read(SHT31_ADDR, data, sizeof(data));

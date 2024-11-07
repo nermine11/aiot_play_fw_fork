@@ -54,7 +54,7 @@ typedef void (*dn_serial_reply_cbt)(uint8_t cmdId, uint8_t rc, uint8_t* payload,
 //=========================== prototypes ======================================
 
 void     dn_serial_mg_init(dn_serial_request_cbt requestCb, dn_status_change_cbt statusChangeCb);
-dn_err_t dn_serial_mg_initiateConnect();
+dn_err_t dn_serial_mg_initiateConnect(void);
 dn_err_t dn_serial_mg_sendRequest(
    uint8_t              cmdId,
    bool                 isAck,

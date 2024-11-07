@@ -821,7 +821,7 @@ typedef void (*dn_ipmt_status_cbt)(uint8_t newStatus); // only used in SmartMesh
 
 //==== admin
 void     dn_ipmt_init(dn_ipmt_notif_cbt notifCb, uint8_t* notifBuf, uint8_t notifBufLen, dn_ipmt_reply_cbt replyCb);
-void     dn_ipmt_cancelTx();
+void     dn_ipmt_cancelTx(void);
 
 
 //==== API
