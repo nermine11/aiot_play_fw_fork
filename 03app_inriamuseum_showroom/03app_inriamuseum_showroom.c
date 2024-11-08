@@ -18,8 +18,8 @@
 
 #define MSGID_CMD_LOWPOWER                0x01
 #define MSGID_CMD_ACTIVE                  0x02
-#define MSGID_CMD_MUSIC_SW                0x03
-#define MSGID_CMD_MUSIC_HP                0x04
+#define MSGID_CMD_MUSIC_STAR_WARS                0x03
+#define MSGID_CMD_MUSIC_HARRY_POTTER                0x04
 
 //=========================== typedef =========================================
 
@@ -64,8 +64,7 @@ typedef struct {
 
 app_dbg_t app_dbg;
 
-uint8_t f_hp = 0;
-uint8_t f_sw = 0;
+
 //=========================== prototypes ======================================
 
 void _ntw_joining_cb(void);
@@ -77,10 +76,13 @@ void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen);
 
 int main(void) {
     uint8_t txBuf[1];
-
+    uint8_t f_run_harry_potter;
+    uint8_t f_run_star_wars;
     //=== initialize variables
     memset(&app_vars,0x00,sizeof(app_vars));
     memset(&app_dbg, 0x00,sizeof(app_dbg));
+    memset(&f_run_harry_potter, 0x00, sizeof(f_run_harry_potter));
+    memset(&f_run_star_wars, 0x00, sizeof(f_run_star_wars));
     app_vars.step                      = STEP_0_JOINING;
 
     // debug
@@ -267,10 +269,12 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
                 app_vars.step         = STEP_2_US;
                 NRF_RTC0->CC[0]       = RTC0PERIOD_STEP_2_US;
                 trackIdx              = app_vars.moteId-2; // the first mote has moteId 2, yet we want trackIdx 0 for it
-                if(f_sw)
+                if(f_run_star_wars){
                   music_play(SONGTITLE_STAR_WARS,trackIdx);
-                if(f_hp)
+                }
+                if(f_run_harry_potter){
                   music_play(SONGTITLE_HARRY_POTTER,trackIdx);
+                }
                 break;
         }
 
