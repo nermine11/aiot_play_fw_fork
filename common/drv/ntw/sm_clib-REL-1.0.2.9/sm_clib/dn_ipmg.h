@@ -1109,8 +1109,8 @@ typedef void (*dn_ipmg_status_cbt)(uint8_t newStatus); // only used in SmartMesh
 
 //==== admin
 void     dn_ipmg_init(dn_ipmg_notif_cbt notifCb, uint8_t* notifBuf, uint8_t notifBufLen, dn_ipmg_reply_cbt replyCb, dn_ipmg_status_cbt statusCb);
-void     dn_ipmg_cancelTx(void);
-dn_err_t dn_ipmg_initiateConnect(void);
+void     dn_ipmg_cancelTx();
+dn_err_t dn_ipmg_initiateConnect();
 
 //==== API
 dn_err_t dn_ipmg_reset(uint8_t type, uint8_t* macAddress, dn_ipmg_reset_rpt* reply);

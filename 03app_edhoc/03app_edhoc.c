@@ -113,7 +113,7 @@ int main(void) {
     }
 
     if(!res) {
-      res = initiator_prepare_message_3(&initiator_processed_m2, ByReference, NULL, &initiator_done, &message_3, &prk_out);
+      res = initiator_prepare_message_3(&initiator_processed_m2, ByReference, NULL, &initiator_done, &message_3, prk_out);
     } else {
       return 1;
     }

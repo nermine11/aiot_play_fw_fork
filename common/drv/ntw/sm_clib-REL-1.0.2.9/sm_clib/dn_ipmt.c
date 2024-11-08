@@ -103,7 +103,7 @@ void dn_ipmt_init(dn_ipmt_notif_cbt notifCb, uint8_t* notifBuf, uint8_t notifBuf
    dn_serial_mt_init(dn_ipmt_rxSerialRequest);
 }
 
-void dn_ipmt_cancelTx(void) {
+void dn_ipmt_cancelTx() {
    
    // lock the module
    dn_lock();

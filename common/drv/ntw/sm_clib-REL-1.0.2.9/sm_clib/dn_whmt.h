@@ -981,7 +981,7 @@ typedef void (*dn_whmt_status_cbt)(uint8_t newStatus); // only used in SmartMesh
 
 //==== admin
 void     dn_whmt_init(dn_whmt_notif_cbt notifCb, uint8_t* notifBuf, uint8_t notifBufLen, dn_whmt_reply_cbt replyCb);
-void     dn_whmt_cancelTx(void);
+void     dn_whmt_cancelTx();
 
 
 //==== API

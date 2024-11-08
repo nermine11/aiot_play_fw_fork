@@ -73,7 +73,7 @@ void dn_uart_txByte(uint8_t byte){
     dn_uart_dbg.num_UART_TXed_bytes++;
 }
 
-void dn_uart_txFlush(void){
+void dn_uart_txFlush(){
    // nothing to do since nRF UART driver is byte-oriented
 }
 

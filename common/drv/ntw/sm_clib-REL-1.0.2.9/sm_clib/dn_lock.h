@@ -21,8 +21,8 @@ Copyright (c) 2014, Dust Networks. All rights reserved.
  extern "C" {
 #endif
 
-void dn_lock(void);
-void dn_unlock(void);
+void dn_lock();
+void dn_unlock();
 
 #ifdef __cplusplus
 }
