@@ -19,8 +19,9 @@
 #define CMD_PERIOD                32768          // 32768@32kHz = 1s
 
 // api
-#define SRC_PORT                  0xf0b8
+#define SRC_PORT                  0xf0b8         //61624
 #define DST_PORT                  0xf0b8
+
 
 //=========================== typedefs ========================================
 

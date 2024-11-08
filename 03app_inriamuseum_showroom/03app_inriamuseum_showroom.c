@@ -16,10 +16,10 @@
 #define RTC0PERIOD_STEP_3_MUSIC_ASN3   (32768>>1)     // 32768>>1 = 500ms
 #define US_THRESHOLD_SOMEONE           150            // in cm
 
-#define MSGID_CMD_LOWPOWER             0x01
-#define MSGID_CMD_ACTIVE               0x02
-#define MSGID_CMD_MUSIC                0x03
-#define MSGID_NOTIF_US                 0x04
+#define MSGID_CMD_LOWPOWER                0x01
+#define MSGID_CMD_ACTIVE                  0x02
+#define MSGID_CMD_MUSIC_SW                0x03
+#define MSGID_CMD_MUSIC_HP                0x04
 
 //=========================== typedef =========================================
 
@@ -64,6 +64,8 @@ typedef struct {
 
 app_dbg_t app_dbg;
 
+uint8_t f_hp = 0;
+uint8_t f_sw = 0;
 //=========================== prototypes ======================================
 
 void _ntw_joining_cb(void);
@@ -265,7 +267,10 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
                 app_vars.step         = STEP_2_US;
                 NRF_RTC0->CC[0]       = RTC0PERIOD_STEP_2_US;
                 trackIdx              = app_vars.moteId-2; // the first mote has moteId 2, yet we want trackIdx 0 for it
-                music_play(SONGTITLE_STAR_WARS,trackIdx);
+                if(f_sw)
+                  music_play(SONGTITLE_STAR_WARS,trackIdx);
+                if(f_hp)
+                  music_play(SONGTITLE_HARRY_POTTER,trackIdx);
                 break;
         }
 
@@ -285,7 +290,12 @@ void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen) {
         case MSGID_CMD_ACTIVE:
             app_vars.step = STEP_2_US;
             break;
-        case MSGID_CMD_MUSIC:
+        case MSGID_CMD_MUSIC_HP:
+            f_hp = 1;
+            app_vars.step = STEP_3_MUSIC_ASN3;
+            break;
+        case MSGID_CMD_MUSIC_SW:
+            f_sw = 1;
             app_vars.step = STEP_3_MUSIC_ASN3;
             break;
         default:
