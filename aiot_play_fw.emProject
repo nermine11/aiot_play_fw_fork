@@ -1310,12 +1310,12 @@
         <file file_name="../common/bsp/pwm.c" />
         <file file_name="../common/bsp/pwm.h" />
         <file file_name="../common/bsp/us.c" />
-        <file file_name="../common/bsp/us.h" />
       </folder>
       <folder Name="drv">
         <folder Name="fet">
           <file file_name="../common/drv/fet/fet.c" />
           <file file_name="../common/drv/fet/fet.h" />
+          <file file_name="../common/bsp/us.h" />
         </folder>
         <folder Name="leds">
           <file file_name="../common/drv/leds/leds.c" />
