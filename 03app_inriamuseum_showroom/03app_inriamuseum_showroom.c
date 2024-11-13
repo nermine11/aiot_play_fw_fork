@@ -40,8 +40,8 @@ typedef struct {
     bool      someoneDetected;
     uint16_t  us_val;
     uint8_t   asn[5];
-    uint8_t   f_run_harry_potter;
-    uint8_t   f_run_star_wars;
+    uint8_t   f_play_harry_potter;
+    uint8_t   f_play_star_wars;
 } app_vars_t;
 
 app_vars_t app_vars;
@@ -81,8 +81,6 @@ int main(void) {
     memset(&app_vars,0x00,sizeof(app_vars));
     memset(&app_dbg, 0x00,sizeof(app_dbg));
     app_vars.step                      = STEP_0_JOINING;
-    app_vars.f_run_harry_potter = 0;
-    app_vars.f_run_star_wars = 0;
 
     // debug
     app_dbg.numcalls_main++;
@@ -268,11 +266,11 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
                 app_vars.step         = STEP_2_US;
                 NRF_RTC0->CC[0]       = RTC0PERIOD_STEP_2_US;
                 trackIdx              = app_vars.moteId-2; // the first mote has moteId 2, yet we want trackIdx 0 for it
-                if(app_vars.f_run_star_wars){
-                  music_play(SONGTITLE_STAR_WARS,trackIdx);
+                if(app_vars.f_play_star_wars){
+                    music_play(SONGTITLE_STAR_WARS,trackIdx);
                 }
-                if(app_vars.f_run_harry_potter){
-                  music_play(SONGTITLE_HARRY_POTTER,trackIdx);
+                if(app_vars.f_play_harry_potter){
+                    music_play(SONGTITLE_HARRY_POTTER,trackIdx);
                 }
                 break;
         }
@@ -294,11 +292,11 @@ void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen) {
             app_vars.step = STEP_2_US;
             break;
         case MSGID_CMD_MUSIC_HARRY_POTTER :
-            app_vars.f_run_harry_potter = 1;
+            app_vars.f_play_harry_potter = 1;
             app_vars.step = STEP_3_MUSIC_ASN3;
             break;
         case MSGID_CMD_MUSIC_STAR_WARS :
-            app_vars.f_run_star_wars = 1;
+            app_vars.f_play_star_wars = 1;
             app_vars.step = STEP_3_MUSIC_ASN3;
             break;
         default:
