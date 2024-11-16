@@ -269,7 +269,7 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
                 if(app_vars.f_play_star_wars){
                     music_play(SONGTITLE_STAR_WARS,trackIdx);
                 }
-                if(app_vars.f_play_harry_potter){
+                else if(app_vars.f_play_harry_potter){
                     music_play(SONGTITLE_HARRY_POTTER,trackIdx);
                 }
                 break;
@@ -293,10 +293,12 @@ void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen) {
             break;
         case MSGID_CMD_MUSIC_HARRY_POTTER :
             app_vars.f_play_harry_potter = 1;
+            app_vars.f_play_star_wars = 0;
             app_vars.step = STEP_3_MUSIC_ASN3;
             break;
         case MSGID_CMD_MUSIC_STAR_WARS :
             app_vars.f_play_star_wars = 1;
+            app_vars.f_play_harry_potter = 0;
             app_vars.step = STEP_3_MUSIC_ASN3;
             break;
         default:
