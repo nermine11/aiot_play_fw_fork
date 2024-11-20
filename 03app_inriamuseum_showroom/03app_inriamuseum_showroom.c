@@ -133,6 +133,10 @@ int main(void) {
         if (app_vars.us_val<US_THRESHOLD_SOMEONE) {
             // someone detected
 
+            // send
+            txBuf[0] = 0x01;
+            ntw_transmit(txBuf,sizeof(txBuf));
+
             if (app_vars.someoneDetected==false) {
                 // state change
 
@@ -143,9 +147,7 @@ int main(void) {
                 // remember
                 app_vars.someoneDetected = true;
 
-                // send
-                txBuf[0] = 0x01;
-                ntw_transmit(txBuf,sizeof(txBuf));
+               
             } else {
                 // same state
 
@@ -156,9 +158,13 @@ int main(void) {
         } else {
             // nobody
 
+            // send
+            txBuf[0] = 0x00;
+            ntw_transmit(txBuf,sizeof(txBuf));
+
             if (app_vars.someoneDetected==true) {
                 // state change
-                
+
                 // LEDs
                 leds_green_off();
                 leds_red_on();
@@ -166,9 +172,6 @@ int main(void) {
                 // remember
                 app_vars.someoneDetected = false;
 
-                // send
-                txBuf[0] = 0x00;
-                ntw_transmit(txBuf,sizeof(txBuf));
 
             } else {
                 // same state
