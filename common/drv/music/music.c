@@ -78,11 +78,16 @@ void music_inhibit(bool inhibit) {
     music_vars.inhibit = inhibit;
 }
 
+bool music_isPlaying(void) {
+    return music_dbg.song_playing;
+}
 void music_play(songtitle_t songtitle, uint8_t trackIdx) {
 
     // debug
     music_dbg.num_music_play++;
-
+    if (music_isPlaying()) {
+        return;
+    }
     switch (songtitle) {
         case SONGTITLE_STAR_WARS:
             trackIdx = trackIdx%22; // roll over if more motes

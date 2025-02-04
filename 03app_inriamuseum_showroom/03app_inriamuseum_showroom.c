@@ -198,6 +198,7 @@ void _ntw_joining_cb(void) {
 
     // blue led: joining
     leds_blue_on();
+
 }
 
 void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply) {
@@ -229,82 +230,54 @@ void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply) {
 void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
     uint32_t num_asns_to_wait;
     uint32_t num_ticks_to_wait;
-    uint8_t  trackIdx;
+    uint8_t  trackIdx;    
 
-    // Debug: Callback called
+    // debug
     app_dbg.numcalls_ntw_getTime_cb++;
-    printf("[GET_TIME_CB] Received time callback. Step: %d\n", app_vars.step);
 
     do {
-        if (reply->RC != DN_ERR_NONE) {
+        if (reply->RC!=DN_ERR_NONE) {
             app_dbg.numerr_ntw_getTime_rc++;
-            printf("[GET_TIME_CB] Error receiving time. RC: %d\n", reply->RC);
             break;
         }
-
-        if (reply->upTime == 0) {
-            printf("[GET_TIME_CB] upTime is zero. Skipping.\n");
+        if (reply->upTime==0) {
             break;
         }
+        // copy over to local copy for easier debug
+        memcpy(app_vars.asn,reply->asn,sizeof(app_vars.asn));
 
-        // Copy ASN for debug
-        memcpy(app_vars.asn, reply->asn, sizeof(app_vars.asn));
-        printf("[GET_TIME_CB] ASN: [%u, %u, %u, %u, %u]\n",
-               app_vars.asn[0], app_vars.asn[1], app_vars.asn[2],
-               app_vars.asn[3], app_vars.asn[4]);
-
+            
         switch (app_vars.step) {
-            case STEP_3_MUSIC_ASN3:
-                app_dbg.num_ntw_getTime_STEP_3_ASN3++;
-                printf("[GET_TIME_CB] In STEP_3_MUSIC_ASN3.\n");
+              case STEP_0_JOINING:
+              case STEP_1_LOWPOWER:
+              case STEP_2_US:
+                  // cannot happen
+                  app_dbg.numerr_ntw_getTime_wrong_step++;
+                  break;
+              case STEP_3_MUSIC_ASN3:
+                  app_dbg.num_ntw_getTime_STEP_3_ASN3++;
+                  if ((app_vars.asn[3] & 0x03) == 0) {
+                      uint32_t num_asns_to_wait    = 0xff - app_vars.asn[4];
+                      uint32_t num_ticks_to_wait   = num_asns_to_wait * TICKS_PER_SLOT;
+                      app_vars.step       = STEP_4_MUSIC_ASN4;
+                      NRF_RTC0->CC[0]     = NRF_RTC0->COUNTER + num_ticks_to_wait  & 0xFFFFFF;  // Absolute scheduling
+                  }
+                  break;
+              case STEP_4_MUSIC_ASN4:
 
-                // Check if ASN[3] condition is met
-                if ((app_vars.asn[3] & 0x03) == 0) {
-                    printf("[GET_TIME_CB] ASN[3] condition met. Calculating wait time.\n");
-
-                    // Calculate ticks to wait
-                    num_asns_to_wait  = 0xFF - app_vars.asn[4];
-                    num_ticks_to_wait = num_asns_to_wait * TICKS_PER_SLOT;
-                    printf("[GET_TIME_CB] num_asns_to_wait: %u, num_ticks_to_wait: %u\n",
-                           num_asns_to_wait, num_ticks_to_wait);
-
-                    // Transition to STEP_4_MUSIC_ASN4
-                    app_vars.step     = STEP_4_MUSIC_ASN4;
-                    NRF_RTC0->CC[0]   = num_ticks_to_wait;
-                    printf("[GET_TIME_CB] Transitioned to STEP_4_MUSIC_ASN4. RTC0->CC[0]: %u\n", num_ticks_to_wait);
-                } else {
-                    printf("[GET_TIME_CB] ASN[3] condition not met. Staying in STEP_3_MUSIC_ASN3.\n");
-                }
-                break;
-
-            case STEP_4_MUSIC_ASN4:
-                app_dbg.num_ntw_getTime_STEP_4_ASN4++;
-                printf("[GET_TIME_CB] In STEP_4_MUSIC_ASN4. Preparing to play music.\n");
-
-                // Transition to STEP_2_US
-                app_vars.step         = STEP_2_US;
-                NRF_RTC0->CC[0]       = RTC0PERIOD_STEP_2_US;
-                printf("[GET_TIME_CB] Transitioned to STEP_2_US. RTC0->CC[0]: %u\n", RTC0PERIOD_STEP_2_US);
-
-                // Determine track index and play music
-                trackIdx = app_vars.moteId - 2;  // Map moteId to track index
-                if (app_vars.f_play_star_wars) {
-                    printf("[GET_TIME_CB] Playing Star Wars. TrackIdx: %u\n", trackIdx);
-                    music_play(SONGTITLE_SYNCTEST, trackIdx);
-                } else if (app_vars.f_play_harry_potter) {
-                    printf("[GET_TIME_CB] Playing Harry Potter. TrackIdx: %u\n", trackIdx);
-                    music_play(SONGTITLE_HARRY_POTTER, trackIdx);
-                } else {
-                    printf("[GET_TIME_CB] No music flag set. Skipping playback.\n");
-                }
-                break;
-
-            default:
-                // Unexpected state
-                app_dbg.numerr_ntw_getTime_wrong_step++;
-                printf("[GET_TIME_CB] Error: Unexpected step %d.\n", app_vars.step);
-                break;
-        }
+                  app_dbg.num_ntw_getTime_STEP_4_ASN4++;
+                  app_vars.step         = STEP_2_US;
+                  NRF_RTC0->CC[0]       = NRF_RTC0->COUNTER + RTC0PERIOD_STEP_2_US  & 0xFFFFFF;  // Absolute scheduling
+                  trackIdx              = app_vars.moteId-2; // the first mote has moteId 2, yet we want trackIdx 0 for it
+                    if(app_vars.f_play_star_wars){
+                        music_play(SONGTITLE_STAR_WARS,trackIdx);
+                    }
+                    else if(app_vars.f_play_harry_potter){
+                        music_play(SONGTITLE_HARRY_POTTER,trackIdx);
+                    }
+                    break;
+                  break;
+          }
     } while (0);
 }
 
@@ -352,7 +325,7 @@ void RTC0_IRQHandler(void) {
         NRF_RTC0->EVENTS_COMPARE[0]    = 0x00000000;
 
         // clear COUNTER
-        NRF_RTC0->TASKS_CLEAR          = 0x00000001;
+        //NRF_RTC0->TASKS_CLEAR          = 0x00000001;
 
         // debug
         app_dbg.numcalls_RTC0_IRQHandler_EVENTS_COMPARE0++;
@@ -360,18 +333,18 @@ void RTC0_IRQHandler(void) {
         // handle
         switch (app_vars.step) {
             case STEP_0_JOINING:
-                NRF_RTC0->CC[0]        = RTC0PERIOD_STEP_0_JOINING;
+                NRF_RTC0->CC[0] = NRF_RTC0->COUNTER + RTC0PERIOD_STEP_0_JOINING  & 0xFFFFFF;
                 ntw_getMoteId();
                 break;
             case STEP_1_LOWPOWER:
-                NRF_RTC0->CC[0]        = RTC0PERIOD_STEP_1_LOWPOWER;
+                NRF_RTC0->CC[0] = NRF_RTC0->COUNTER + RTC0PERIOD_STEP_1_LOWPOWER  & 0xFFFFFF;
                 break;
             case STEP_2_US:
-                NRF_RTC0->CC[0]        = RTC0PERIOD_STEP_2_US;
-                app_vars.doUsRead      = true;
+                NRF_RTC0->CC[0] = NRF_RTC0->COUNTER + RTC0PERIOD_STEP_2_US  & 0xFFFFFF;
+                app_vars.doUsRead = true;
                 break;
             case STEP_3_MUSIC_ASN3:
-                NRF_RTC0->CC[0]        = RTC0PERIOD_STEP_3_MUSIC_ASN3;
+                NRF_RTC0->CC[0] = NRF_RTC0->COUNTER + RTC0PERIOD_STEP_3_MUSIC_ASN3  & 0xFFFFFF;
                 ntw_getTime();
                 break;
             case STEP_4_MUSIC_ASN4:
