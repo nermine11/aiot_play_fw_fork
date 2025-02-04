@@ -324,9 +324,6 @@ void RTC0_IRQHandler(void) {
         // clear flag
         NRF_RTC0->EVENTS_COMPARE[0]    = 0x00000000;
 
-        // clear COUNTER
-        //NRF_RTC0->TASKS_CLEAR          = 0x00000001;
-
         // debug
         app_dbg.numcalls_RTC0_IRQHandler_EVENTS_COMPARE0++;
 
