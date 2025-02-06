@@ -1,5 +1,4 @@
 #include <string.h>
-#include <stdio.h>
 #include <stdbool.h>
 #include "board.h"
 #include "periodictimer.h"
@@ -134,10 +133,6 @@ int main(void) {
         if (app_vars.us_val<US_THRESHOLD_SOMEONE) {
             // someone detected
 
-            // send
-            txBuf[0] = 0x01;
-            ntw_transmit(txBuf,sizeof(txBuf));
-
             if (app_vars.someoneDetected==false) {
                 // state change
 
@@ -148,7 +143,9 @@ int main(void) {
                 // remember
                 app_vars.someoneDetected = true;
 
-               
+                // send
+                txBuf[0] = 0x01;
+                ntw_transmit(txBuf,sizeof(txBuf));
             } else {
                 // same state
 
@@ -159,13 +156,9 @@ int main(void) {
         } else {
             // nobody
 
-            // send
-            txBuf[0] = 0x00;
-            ntw_transmit(txBuf,sizeof(txBuf));
-
             if (app_vars.someoneDetected==true) {
                 // state change
-
+                
                 // LEDs
                 leds_green_off();
                 leds_red_on();
@@ -173,6 +166,9 @@ int main(void) {
                 // remember
                 app_vars.someoneDetected = false;
 
+                // send
+                txBuf[0] = 0x00;
+                ntw_transmit(txBuf,sizeof(txBuf));
 
             } else {
                 // same state
@@ -198,7 +194,6 @@ void _ntw_joining_cb(void) {
 
     // blue led: joining
     leds_blue_on();
-
 }
 
 void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply) {
@@ -230,7 +225,7 @@ void _ntw_getMoteId_cb(dn_ipmt_getParameter_moteId_rpt* reply) {
 void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
     uint32_t num_asns_to_wait;
     uint32_t num_ticks_to_wait;
-    uint8_t  trackIdx;    
+    uint8_t  trackIdx;
 
     // debug
     app_dbg.numcalls_ntw_getTime_cb++;
@@ -243,42 +238,48 @@ void _ntw_getTime_cb(dn_ipmt_getParameter_time_rpt* reply) {
         if (reply->upTime==0) {
             break;
         }
+
         // copy over to local copy for easier debug
         memcpy(app_vars.asn,reply->asn,sizeof(app_vars.asn));
 
-            
         switch (app_vars.step) {
-              case STEP_0_JOINING:
-              case STEP_1_LOWPOWER:
-              case STEP_2_US:
-                  // cannot happen
-                  app_dbg.numerr_ntw_getTime_wrong_step++;
-                  break;
-              case STEP_3_MUSIC_ASN3:
-                  app_dbg.num_ntw_getTime_STEP_3_ASN3++;
-                  if ((app_vars.asn[3] & 0x03) == 0) {
-                      uint32_t num_asns_to_wait    = 0xff - app_vars.asn[4];
-                      uint32_t num_ticks_to_wait   = num_asns_to_wait * TICKS_PER_SLOT;
-                      app_vars.step       = STEP_4_MUSIC_ASN4;
-                      NRF_RTC0->CC[0]     = NRF_RTC0->COUNTER + num_ticks_to_wait  & 0xFFFFFF;  // Absolute scheduling
-                  }
-                  break;
-              case STEP_4_MUSIC_ASN4:
+            case STEP_0_JOINING:
+            case STEP_1_LOWPOWER:
+            case STEP_2_US:
+                // cannot happen
+                app_dbg.numerr_ntw_getTime_wrong_step++;
+                break;
+            case STEP_3_MUSIC_ASN3:
+                app_dbg.num_ntw_getTime_STEP_3_ASN3++;
+                if ( (app_vars.asn[3]&0x03)==0) {
+                    // step 2: I'm at the right ASN[3]
+                    // wait for ASN[4] to roll over
 
-                  app_dbg.num_ntw_getTime_STEP_4_ASN4++;
-                  app_vars.step         = STEP_2_US;
-                  NRF_RTC0->CC[0]       = NRF_RTC0->COUNTER + RTC0PERIOD_STEP_2_US  & 0xFFFFFF;  // Absolute scheduling
-                  trackIdx              = app_vars.moteId-2; // the first mote has moteId 2, yet we want trackIdx 0 for it
-                    if(app_vars.f_play_star_wars){
-                        music_play(SONGTITLE_STAR_WARS,trackIdx);
-                    }
-                    else if(app_vars.f_play_harry_potter){
-                        music_play(SONGTITLE_HARRY_POTTER,trackIdx);
-                    }
-                    break;
-                  break;
-          }
-    } while (0);
+                    num_asns_to_wait  = 0xff-app_vars.asn[4];
+                    num_ticks_to_wait = num_asns_to_wait*TICKS_PER_SLOT;
+                    app_vars.step     = STEP_4_MUSIC_ASN4;
+                    // clear COUNTER
+                    NRF_RTC0->TASKS_CLEAR          = 0x00000001;
+                    NRF_RTC0->CC[0]   = num_ticks_to_wait;
+                }
+                break;
+            case STEP_4_MUSIC_ASN4:
+                app_dbg.num_ntw_getTime_STEP_4_ASN4++;
+                app_vars.step         = STEP_2_US;
+                // clear COUNTER
+                NRF_RTC0->TASKS_CLEAR          = 0x00000001;
+                NRF_RTC0->CC[0]       = RTC0PERIOD_STEP_2_US;
+                trackIdx              = app_vars.moteId-2; // the first mote has moteId 2, yet we want trackIdx 0 for it
+                if(app_vars.f_play_star_wars){
+                    music_play(SONGTITLE_STAR_WARS,trackIdx);
+                }
+                else if(app_vars.f_play_harry_potter){
+                    music_play(SONGTITLE_HARRY_POTTER,trackIdx);
+                }
+                break;
+        }
+
+    } while(0);
 }
 
 void _ntw_receive_cb(uint8_t* buf, uint8_t bufLen) {
@@ -324,24 +325,27 @@ void RTC0_IRQHandler(void) {
         // clear flag
         NRF_RTC0->EVENTS_COMPARE[0]    = 0x00000000;
 
+        // clear COUNTER
+        NRF_RTC0->TASKS_CLEAR          = 0x00000001;
+
         // debug
         app_dbg.numcalls_RTC0_IRQHandler_EVENTS_COMPARE0++;
 
         // handle
         switch (app_vars.step) {
             case STEP_0_JOINING:
-                NRF_RTC0->CC[0] = NRF_RTC0->COUNTER + RTC0PERIOD_STEP_0_JOINING  & 0xFFFFFF;
+                NRF_RTC0->CC[0]        = RTC0PERIOD_STEP_0_JOINING;
                 ntw_getMoteId();
                 break;
             case STEP_1_LOWPOWER:
-                NRF_RTC0->CC[0] = NRF_RTC0->COUNTER + RTC0PERIOD_STEP_1_LOWPOWER  & 0xFFFFFF;
+                NRF_RTC0->CC[0]        = RTC0PERIOD_STEP_1_LOWPOWER;
                 break;
             case STEP_2_US:
-                NRF_RTC0->CC[0] = NRF_RTC0->COUNTER + RTC0PERIOD_STEP_2_US  & 0xFFFFFF;
-                app_vars.doUsRead = true;
+                NRF_RTC0->CC[0]        = RTC0PERIOD_STEP_2_US;
+                app_vars.doUsRead      = true;
                 break;
             case STEP_3_MUSIC_ASN3:
-                NRF_RTC0->CC[0] = NRF_RTC0->COUNTER + RTC0PERIOD_STEP_3_MUSIC_ASN3  & 0xFFFFFF;
+                NRF_RTC0->CC[0]        = RTC0PERIOD_STEP_3_MUSIC_ASN3;
                 ntw_getTime();
                 break;
             case STEP_4_MUSIC_ASN4:
