@@ -1,6 +1,5 @@
 #include <string.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include "music.h"
 #include "pwm.h"
 #include "leds.h"
